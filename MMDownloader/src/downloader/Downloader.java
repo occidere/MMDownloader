@@ -169,9 +169,16 @@ public class Downloader {
 		//시간복잡도 O(N)
 		for(int i : addressIdx){
 			parsedURL = xml.substring(i);
-			int prefixIdx = prefix.length(), suffixIdx = parsedURL.indexOf(suffix);
-			if(prefixIdx<0 || suffixIdx<0) continue; //원치않는 주소부분이 검색된 경우 제외
-			parsedURL = domain + parsedURL.substring(prefix.length(), parsedURL.indexOf(suffix));
+			//System.out.println(parsedURL);
+			
+			//원치않는 주소부분이 검색된 경우 제외 <-대부분 인덱스가 음수값이 된다.
+			int prefixIdx = prefix.length();
+			if(prefixIdx>0) parsedURL = parsedURL.substring(prefixIdx);
+			
+			int suffixIdx = parsedURL.indexOf(suffix);
+			if(suffixIdx>0) parsedURL = parsedURL.substring(0, suffixIdx);
+			
+			parsedURL = domain + parsedURL;
 			url.add(parsedURL);
 		}
 		kmp.close();
@@ -195,6 +202,7 @@ public class Downloader {
 		LinkedList<String> imgURL = new LinkedList<>();
 		
 		//http://wasabisyrup.com <-마지막 / 안붙음!
+		System.out.println(realAddress);
 		String domain = realAddress.substring(0, realAddress.indexOf("/archives"));
 		
 		//브라우저는 인터넷 익스플로러로 설정
