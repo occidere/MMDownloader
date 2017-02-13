@@ -124,13 +124,13 @@ public class Downloader {
 			
 			String line;
 			
-			BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 			
 			while((line = in.readLine()) != null){
 				if(line.contains("<h1>")) 
 					title = line.replaceAll("<[^>]*>", "").replaceAll("[\\/:*?<>|.]", " ").trim();
 				else if(line.contains("http") && line.contains("archives")){
-					archiveAddress = parser(line, "", "href=\"", "\" target=\"");
+					archiveAddress = parser(line, "", "href=\"", "\" ");
 					break;
 				}
 			}
