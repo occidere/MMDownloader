@@ -202,7 +202,6 @@ public class Downloader {
 		LinkedList<String> imgURL = new LinkedList<>();
 		
 		//http://wasabisyrup.com <-마지막 / 안붙음!
-		System.out.println(realAddress);
 		String domain = realAddress.substring(0, realAddress.indexOf("/archives"));
 		
 		//브라우저는 인터넷 익스플로러로 설정
