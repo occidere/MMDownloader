@@ -130,7 +130,7 @@ public class Downloader {
 				if(line.contains("<h1>")) 
 					title = line.replaceAll("<[^>]*>", "").replaceAll("[\\/:*?<>|.]", " ").trim();
 				else if(line.contains("http") && line.contains("archives")){
-					archiveAddress = parser(line, "", "href=\"", "\" ");
+					archiveAddress = parser(line, "", "href=\"", "\"");
 					break;
 				}
 			}
