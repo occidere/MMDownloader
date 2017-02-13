@@ -1,6 +1,5 @@
 package ui;
 
-import java.io.IOException;
 import java.util.Scanner;
 
 import downloader.Downloader;
@@ -11,7 +10,7 @@ public class UI {
 	
 	//제작자 출력. 수정 금지
 	private UI(){
-		System.out.println("제작자: occidere\t버전: 0.0.1 (2017.02.12)");
+		System.out.println("제작자: occidere\t버전: 0.1.0 (2017.02.13)");
 	}
 	
 	private static UI instance;
@@ -29,7 +28,7 @@ public class UI {
 		String comicAddress;
 
 		while (menuNum != EXIT) {
-			System.out.println("메뉴를 선택하세요\n  1. 한 편씩 다운로드\n  2. 여러 편씩 다운로드(구현예정)\n  3. 다운로드 폴더 열기\n  0. 종료");
+			System.out.println("메뉴를 선택하세요\n  1. 만화 다운로드\n  2. 다운로드 폴더 열기\n  0. 종료");
 			menuNum = sc.nextInt();
 
 			switch (menuNum) {
@@ -39,20 +38,18 @@ public class UI {
 				downloader.download(comicAddress, DEFAULT_PATH);
 				downloader.close();
 				break;
-			case 2:
-				System.out.println("추후 구현 예정");
-				break;
 
-			case 3:
+			case 2:
 				downloader = Downloader.getInstance();
 				downloader.makeDir(DEFAULT_PATH);
 				try {
 					Runtime.getRuntime().exec("explorer.exe " + DEFAULT_PATH);
-				} catch (IOException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				downloader.close();
 				break;
+			
 			case 0:
 				System.out.println("프로그램을 종료합니다");
 				break;
