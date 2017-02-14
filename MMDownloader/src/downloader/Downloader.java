@@ -80,7 +80,7 @@ public class Downloader {
 					FileOutputStream fos = new FileOutputStream(path + String.format("%03d", ++pageNum) + getExt(imgURL));
 					
 					HttpURLConnection conn = (HttpURLConnection)new URL(imgURL).openConnection();
-					conn.setConnectTimeout(30000); //최대 30초까지 시간 지연 기다려줌
+					conn.setConnectTimeout(300000); //최대 5분까지 시간 지연 기다려줌
 					conn.setRequestMethod("GET");
 					conn.setRequestProperty("User-Agent", "Mozilla/5.0");
 					
@@ -127,7 +127,7 @@ public class Downloader {
 			BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 			
 			while((line = in.readLine()) != null){
-				if(line.contains("<h1>")) 
+				if(line.contains("<h1>"))
 					title = line.replaceAll("<[^>]*>", "").replaceAll("[\\/:*?<>|.]", " ").trim();
 				else if(line.contains("http") && line.contains("archives")){
 					archiveAddress = parser(line, "", "href=\"", "\"");
