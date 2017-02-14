@@ -10,7 +10,7 @@ public class UI {
 	
 	//제작자 출력. 수정 금지
 	private UI(){
-		System.out.println("제작자: occidere\t버전: 0.1.2 (2017.02.13)");
+		System.out.println("제작자: occidere\t버전: 0.1.3 (2017.02.14)");
 	}
 	
 	private static UI instance;
