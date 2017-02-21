@@ -179,7 +179,10 @@ public class Downloader {
 			if(suffixIdx>0) parsedURL = parsedURL.substring(0, suffixIdx);
 			
 			parsedURL = domain + parsedURL;
-			url.add(parsedURL);
+			// 만화 업데이트(mangaup) 주소를 넣을 경우 아카이브주소 + 전편 보러가기 주소(marumaru.in/manga/번호)가 같이 들어옴
+			// 때문에 아카이브 주소만 남기고 전편 보러가기 주소를 걸러주는 작업을 아래와 같이 처리
+			// 의존성이 너무 높아 추후 수정 작업 필요
+			if (!parsedURL.contains("marumaru")) url.add(parsedURL);
 		}
 		kmp.close();
 		return url;
