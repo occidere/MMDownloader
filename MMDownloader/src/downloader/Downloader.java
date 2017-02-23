@@ -5,16 +5,19 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
 import java.util.LinkedList;
 import java.util.logging.Level;
 
 import java.net.URL;
 import java.net.HttpURLConnection;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 public class Downloader {
 	
@@ -47,6 +50,10 @@ public class Downloader {
 		LinkedList<String> archiveAddress = getArchiveAddress(rawAddress);
 		System.out.printf("총 %d개\n", archiveAddress.size());
 		
+		//다운로드용 버퍼
+		byte[] buf = new byte[1024*1024];
+		int pageNum, numberOfPages, len;
+		
 		//http://www.shencomics.com/archives/533456와 같은 아카이브 주소
 		for(String realAddress : archiveAddress){
 			
@@ -59,43 +66,41 @@ public class Downloader {
 			String path = defaultPath + title + "\\";
 			if(!smallTitle.equals("") && !smallTitle.equals(title)) path += smallTitle + "\\";
 			
-			//다운로드용 버퍼
-			byte[] buf = new byte[1024*1024];
-			int pageNum, numberOfPages = imgList.size(), len;
+			pageNum = 0;
+			numberOfPages = imgList.size();
+				
+			makeDir(path); //저장경로 폴더 생성
 			
-			try {
-				pageNum = 0; //0으로 초기화
+			System.out.printf("제목 : %s\n다운로드 폴더 : %s\n",title, path);
+			System.out.printf("다운로드 시작 (전체 %d개)\n", numberOfPages);
+			
+			//imgList에 담긴 순수 이미지 주소들 foreach 탐색: O(N)
+			for(String imgURL : imgList){
 				
-				makeDir(path); //저장경로 폴더 생성
-				
-				System.out.printf("제목 : %s\n다운로드 폴더 : %s\n",title, path);
-				System.out.printf("다운로드 시작 (전체 %d개)\n", numberOfPages);
-				
-				//imgList에 담긴 순수 이미지 주소들 foreach 탐색: O(N)
-				for(String imgURL : imgList){
+				//try...catch를 foreach 내부에 사용해서 이미지 한개 다운로드가 실패해도 전체가 종료되는 불상사 방지
+				try {
 					/*
 					 * FileOutputStream을 그때그때마다 생성 & 종료하게 하여 빠른 디스크 IO 처리
 					 * 페이지 번호는 001.jpg, 052.jpg, 337.jpg같은 형식
 					 */
 					FileOutputStream fos = new FileOutputStream(path + String.format("%03d", ++pageNum) + getExt(imgURL));
-					
+				
 					HttpURLConnection conn = (HttpURLConnection)new URL(imgURL).openConnection();
 					conn.setConnectTimeout(300000); //최대 5분까지 시간 지연 기다려줌
 					conn.setRequestMethod("GET");
 					conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-					
+				
 					InputStream in = conn.getInputStream(); //속도저하의 원인. 느린 이유는 결국 사이트가 느려서...
-					
+				
 					while((len = in.read(buf))>0) fos.write(buf, 0, len);
-
 					System.out.printf("%3d / %3d ...... 완료!\n", pageNum, numberOfPages);
 					fos.close();
 					in.close();
 				}
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-			}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}			
 		}
 	}
 	
@@ -117,22 +122,20 @@ public class Downloader {
 		}
 		
 		try{
-			HttpURLConnection conn = (HttpURLConnection)new URL(rawAddress).openConnection();
-			conn.setRequestMethod("GET");
-			conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-			conn.setConnectTimeout(30000);
+			@SuppressWarnings("unused")
+			String tmpSmallTitle, hrefURL; //tmpSmallTitle은 추후 사용가능성이 있어 생성
+			//Jsoup을 이용하여 파싱. timeout은 5분
+			Document doc = Jsoup.connect(rawAddress).header("User-Agent", "Mozilla/5.0").timeout(30000).get();
+			title = doc.select("h1").text(); //<h1>에 제목 있음
 			
-			String line;
-			
-			BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-			
-			while((line = in.readLine()) != null){
-				if(line.contains("<h1>"))
-					title = line.replaceAll("<[^>]*>", "").replaceAll("[\\/:*?<>|.]", " ").trim();
-				else if(line.contains("http") && line.contains("archives")){
-					archiveAddress = parser(line, "", "href=\"", "\"");
-					break;
-				}
+			Elements divContent = doc.select("div.content").select("a[target]");
+			for(Element e : divContent){
+				tmpSmallTitle = e.text(); //각 만화별 소제목(갱스터 1화)
+				hrefURL = e.attr("href"); //만화 아카이브 주소(wasabisyrup)
+				
+				//쓸데없는 주소가 한두개씩 꼭 있어서 archives를 포함하는 아카이브 주소만 저장
+				if(hrefURL.contains("archives"))
+					archiveAddress.add(hrefURL);
 			}
 		}
 		catch(Exception e){
