@@ -2,7 +2,6 @@ package downloader;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import org.jsoup.Jsoup;
@@ -23,7 +22,7 @@ public class Downloader {
 	
 	//생성자 호출 시 마다 타이틀 초기화
 	private Downloader(){
-		title = smallTitle = "";
+		title = titleNo = "";
 	}
 	
 	//싱글톤 패턴
@@ -33,12 +32,9 @@ public class Downloader {
 		return instance;
 	}
 	
-	//HTML태그 중 div의 class값. 이 값이 있는 곳이 이미지 파일들이 있는 곳
-	private final String divID = "gallery_vertical";
-	
 	//만화 제목 = 폴더 이름
 	private String title; //원피스
-	private String smallTitle; //원피스337화
+	private String titleNo; //337화
 	
 	/**
 	 * 순수 이미지 주소가 담긴 링크드리스트를 가지고 HttpURLConnection을 이용해 실제 다운로드 및 저장을 담당
@@ -62,16 +58,15 @@ public class Downloader {
 			//순수 이미지주소가 담길 imgList 링크드리스트
 			LinkedList<String> imgList = getImgList(realAddress);
 			
-			//저장경로 = "기본경로 + 만화제목 + \" = "C:\Marumaru\만화제목\"
-			String path = defaultPath + title + "\\";
-			if(!smallTitle.equals("") && !smallTitle.equals(title)) path += smallTitle + "\\";
+			//저장경로 = "기본경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\"
+			String path = String.format("%s\\%s\\%s %s\\", defaultPath, title, title, titleNo);
 			
 			pageNum = 0;
 			numberOfPages = imgList.size();
 				
 			makeDir(path); //저장경로 폴더 생성
 			
-			System.out.printf("제목 : %s\n다운로드 폴더 : %s\n",title, path);
+			System.out.printf("제목 : %s\n다운로드 폴더 : %s\n", title, path);
 			System.out.printf("다운로드 시작 (전체 %d개)\n", numberOfPages);
 			
 			//imgList에 담긴 순수 이미지 주소들 foreach 탐색: O(N)
@@ -122,20 +117,16 @@ public class Downloader {
 		}
 		
 		try{
-			@SuppressWarnings("unused")
-			String tmpSmallTitle, hrefURL; //tmpSmallTitle은 추후 사용가능성이 있어 생성
+			String hrefURL;
 			//Jsoup을 이용하여 파싱. timeout은 5분
 			Document doc = Jsoup.connect(rawAddress).header("User-Agent", "Mozilla/5.0").timeout(30000).get();
-			title = doc.select("h1").text(); //<h1>에 제목 있음
 			
 			Elements divContent = doc.select("div.content").select("a[target]");
 			for(Element e : divContent){
-				tmpSmallTitle = e.text(); //각 만화별 소제목(갱스터 1화)
 				hrefURL = e.attr("href"); //만화 아카이브 주소(wasabisyrup)
 				
 				//쓸데없는 주소가 한두개씩 꼭 있어서 archives를 포함하는 아카이브 주소만 저장
-				if(hrefURL.contains("archives"))
-					archiveAddress.add(hrefURL);
+				if(hrefURL.contains("archives")) archiveAddress.add(hrefURL);
 			}
 		}
 		catch(Exception e){
@@ -143,53 +134,7 @@ public class Downloader {
 		}
 		return archiveAddress;
 	}
-	
-	/**
-	 * raw형태의 스트링값이 들어오면 KMP알고리즘을 이용하여 
-	 * 접두사와 접미사 사이의 문자열을 모두 찾은 뒤, 링크드리스트에 저장해서 리턴
-	 * @param xml 순수 이미지주소를 포함한 HTML 태그 내용 또는 일반 만화 주소
-	 * @param domain http://wasabisyrup.com <-마지막 / 안붙음! 또는 일반 만화 주소 처리의 경우는 공백
-	 * @param prefix 잘라낼 시발점이 되는 접두사
-	 * @param suffix 잘라낼 종점이 되는 접미사
-	 * @return http://wasabisyrup.com/storage/gallery/asdfa.jpg처럼 순수 이미지주소만 담긴 링크드리스트
-	 *  또는 wasabisyrup과 같은 직접주소가 담긴 링크드리스트
-	 */
-	private LinkedList<String> parser(String xml, String domain, String prefix, String suffix){
-		//싱글톤 KMP
-		KMP kmp = KMP.getInstance();
-		
-		//순수 이미지주소는 접두사(data-src=\)부터 접미사("/>) 사이의 값
-		//순수 이미지 주소가 잠시 담길 스트링 값
-		String parsedURL;
-		
-		//순수 이미지 주소가 담길 링크드리스트
-		LinkedList<String> url = new LinkedList<>();
-		
-		//kmp탐색 결과로 나온 주소 시작 인덱스가 담길 링크드리스트
-		LinkedList<Integer> addressIdx = kmp.getList(xml, prefix);
-		
-		//foreach로 주소 시작 인덱스들을 탐색해서 순수 이미지 주소를 걸러낸 뒤, imgURL 링크드리스트에 저장
-		//시간복잡도 O(N)
-		for(int i : addressIdx){
-			parsedURL = xml.substring(i);
-			//System.out.println(parsedURL);
-			
-			//원치않는 주소부분이 검색된 경우 제외 <-대부분 인덱스가 음수값이 된다.
-			int prefixIdx = prefix.length();
-			if(prefixIdx>0) parsedURL = parsedURL.substring(prefixIdx);
-			
-			int suffixIdx = parsedURL.indexOf(suffix);
-			if(suffixIdx>0) parsedURL = parsedURL.substring(0, suffixIdx);
-			
-			parsedURL = domain + parsedURL;
-			// 만화 업데이트(mangaup) 주소를 넣을 경우 아카이브주소 + 전편 보러가기 주소(marumaru.in/manga/번호)가 같이 들어옴
-			// 때문에 아카이브 주소만 남기고 전편 보러가기 주소를 걸러주는 작업을 아래와 같이 처리
-			// 의존성이 너무 높아 추후 수정 작업 필요
-			if (!parsedURL.contains("marumaru")) url.add(parsedURL);
-		}
-		kmp.close();
-		return url;
-	}
+
 	
 	/**
 	 * HtmlUnit을 이용하여 이미지 divID와 일치하는 부분(=이미지들이 있는 곳)을 추출
@@ -215,14 +160,19 @@ public class Downloader {
 		
 		try{
 			HtmlPage page = webClient.getPage(realAddress);
+			Document doc = Jsoup.parse(page.asXml()); //HtmlUnit을 이용해 Html코드 파싱 후 jsoup doc 형식으로 생성
 			
-			//<title> 태그를 바탕으로 만화 제목 추출. 제목은 폴더명으로 사용되므로 폴더명생성규칙 위반되는 특수문자 제거
-			smallTitle = page.getTitleText();
-			smallTitle = smallTitle.substring(0, smallTitle.indexOf("|")).replaceAll("[\\/:*?<>|.]", " ").trim();
+			//<span class=title-subject, title-no> 태그를 바탕으로 만화 제목 추출
+			//제목은 폴더명으로 사용되므로 폴더명생성규칙 위반되는 특수문자 제거
+			title = removeSpecialCharacter(doc.select("span.title-subject").first().text());
+			titleNo = doc.select("span.title-no").first().text();
 			
-			//divID에 해당되는 div 추출후 xml형식(=Javascript와 HTML값 전부)으로 imgParser로 넘김
-			HtmlDivision htmlDivision = (HtmlDivision)page.getElementById(divID);
-			imgURL = parser(htmlDivision.asXml(), domain, "data-src=\"", "\"/>");
+			/*
+			 * <img class="lz-lazyload" src="/template/images/transparent.png" data-src="/storage/gallery/OrXeaIqMbEc/m0035_T6THtV9OvWI.jpg">
+			 * 위의 data-src부분을 찾아서 Elements에 저장한 뒤, foreach로 linkedlist에 저장
+			 */
+			Elements data_src = doc.select("img[data-src]");
+			for(Element url : data_src) imgURL.add(domain+url.attr("data-src"));
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -231,6 +181,11 @@ public class Downloader {
 		webClient.close();
 		
 		return imgURL;
+	}
+	
+	//특수문자 제거 메서드
+	private String removeSpecialCharacter(String rawText){
+		return rawText.replaceAll("[\\/:*?<>|.]", " ").trim();
 	}
 	
 	//폴더 생성 메서드
