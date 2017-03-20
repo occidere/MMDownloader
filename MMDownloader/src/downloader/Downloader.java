@@ -4,6 +4,8 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import sys.SystemInfo;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Document;
@@ -14,7 +16,6 @@ import java.util.logging.Level;
 
 import java.net.URL;
 import java.net.HttpURLConnection;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
@@ -43,7 +44,7 @@ public class Downloader {
 	 * @param rawAddress 순수 이미지주소를 포함한 HTML 태그 내용
 	 * @param defaultPath 저장될 경로(C:\Marumaru\)
 	 */
-	public void download(String rawAddress, String defaultPath) {
+	public void download(String rawAddress) {
 		
 		LinkedList<String> archiveAddress = getArchiveAddress(rawAddress);
 		System.out.printf("총 %d개\n", archiveAddress.size());
@@ -60,12 +61,12 @@ public class Downloader {
 			LinkedList<String> imgList = getImgList(realAddress);
 			
 			//저장경로 = "기본경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\"
-			String path = String.format("%s\\%s\\%s %s\\", defaultPath, title, title, titleNo);
+			String path = String.format("%s/%s/%s %s/", SystemInfo.DEFAULT_PATH, title, title, titleNo);
 			
 			pageNum = 0;
 			numberOfPages = imgList.size();
 				
-			makeDir(path); //저장경로 폴더 생성
+			SystemInfo.makeDir(path); //저장경로 폴더 생성
 			
 			System.out.printf("제목 : %s\n다운로드 폴더 : %s\n", title, path);
 			System.out.printf("다운로드 시작 (전체 %d개)\n", numberOfPages);
@@ -215,12 +216,6 @@ public class Downloader {
 	//특수문자 제거 메서드
 	private String removeSpecialCharacter(String rawText){
 		return rawText.replaceAll("[\\/:*?<>|.]", " ").trim();
-	}
-	
-	//폴더 생성 메서드
-	public void makeDir(String path){
-		File f = new File(path);
-		if(!f.exists()) f.mkdirs();
 	}
 	
 	//확장자 설정 메서드
