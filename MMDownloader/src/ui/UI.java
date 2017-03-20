@@ -3,14 +3,14 @@ package ui;
 import java.util.Scanner;
 
 import downloader.Downloader;
+import sys.SystemInfo;
 
 public class UI {
 	private final int EXIT = 0;
-	private final String DEFAULT_PATH = "C:\\Marumaru\\";
 	
 	//제작자 출력. 수정 금지
 	private UI(){
-		System.out.println("제작자: occidere\t버전: 0.2.0 (2017.03.16)");
+		System.out.println(SystemInfo.VERSION);
 	}
 	
 	private static UI instance;
@@ -28,28 +28,24 @@ public class UI {
 		String comicAddress;
 
 		while (menuNum != EXIT) {
-			System.out.println("메뉴를 선택하세요\n  1. 만화 다운로드\n  2. 다운로드 폴더 열기\n  0. 종료");
+			System.out.println("메뉴를 선택하세요\n  1. 만화 다운로드\n  2. 다운로드 폴더 열기\n  3. 마루마루 접속\n  0. 종료");
 			menuNum = sc.nextInt();
 
 			switch (menuNum) {
 			case 1:
 				System.out.print("주소를 입력하세요: ");
 				comicAddress = sc.next().trim();
-				downloader.download(comicAddress, DEFAULT_PATH);
+				downloader.download(comicAddress);
 				downloader.close();
 				break;
 
 			case 2:
-				downloader = Downloader.getInstance();
-				downloader.makeDir(DEFAULT_PATH);
-				try {
-					Runtime.getRuntime().exec("explorer.exe " + DEFAULT_PATH);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				downloader.close();
+				SystemInfo.makeDir();
+				SystemInfo.openDir();
 				break;
-			
+			case 3:
+				SystemInfo.openBrowser();
+				break;
 			case 0:
 				System.out.println("프로그램을 종료합니다");
 				break;
