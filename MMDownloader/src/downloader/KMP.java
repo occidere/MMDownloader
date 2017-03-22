@@ -1,3 +1,4 @@
+/**************************************** discarded after ver 0.2.0 ****************************************/
 package downloader;
 
 import java.util.LinkedList;
