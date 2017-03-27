@@ -8,7 +8,7 @@ import java.net.URI;
  * <p>시스템과 관련된 클래스
  * <p>폴더생성, 브라우저 오픈등의 기능이 static으로 내장
  * <p>Instantiation 불가(private 생성자)
- * @author occid
+ * @author occidere
  */
 public class SystemInfo {
 	private SystemInfo(){}
@@ -19,7 +19,7 @@ public class SystemInfo {
 	//마루마루 브라우저 주소
 	public static final String MARU_ADDR = "http://marumaru.in/";
 	//프로그램 버전. * 수정금지 *
-	public static final String VERSION = "제작자: occidere\t버전: 0.2.3 (2017.03.20)";
+	public static final String VERSION = "제작자: occidere\t버전: 0.2.4 (2017.03.27)";
 	
 	/**
 	 * <p>마루마루 인터넷창 열기
