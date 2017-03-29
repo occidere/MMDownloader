@@ -38,8 +38,14 @@ public class Downloader {
 	private String title, titleNo; //title=원피스, titleNo=337화
 	private final String USER_AGENT = "Chrome/30.0.0.0 Mobile"; //크롬 모바일 User-Agent
 	private final String PASSWORD = "qndxkr"; //만화 비밀번호
-	//private String USER_AGENT = "Mozilla/5.0"; //익스플로러11 User-Agent
+	
 	private final int MAX_WAIT_TIME = 300000; //최대 대기시간 5분
+	
+	/* 중요! 아카이브명이 옛날 주소 그대로면 HttpURLConnection을 이용한 다운로드시 
+	 * 제대로 다운로드가 안됨 -> 항상 최신 아카이브명으로 집어넣어줘야 됨 */
+	private final String OLD_ARCHIVES_NAME[] = { "shencomics", "yuncomics" }; //옛날 아카이브명
+	private final String NEW_ARCHIVES_NAME = "wasabisyrup"; //현재 아카이브명
+	
 	
 	/**
 	 * 순수 이미지 주소가 담긴 링크드리스트를 가지고 HttpURLConnection을 이용해 실제 다운로드 및 저장을 담당
@@ -56,7 +62,7 @@ public class Downloader {
 		
 		//http://www.shencomics.com/archives/533456와 같은 아카이브 주소
 		for(String realAddress : archiveAddress){
-			
+
 			System.out.println("다운로드 시도중...");
 			
 			//순수 이미지주소가 담길 imgList 링크드리스트
@@ -78,18 +84,20 @@ public class Downloader {
 
 				//try...catch를 foreach 내부에 사용해서 이미지 한개 다운로드가 실패해도 전체가 종료되는 불상사 방지
 				try {
+					
 					/* FileOutputStream을 그때그때마다 생성 & 종료하게 하여 빠른 디스크 IO 처리
 					 * 페이지 번호는 001.jpg, 052.jpg, 337.jpg같은 형식 */
 					FileOutputStream fos = new FileOutputStream(String.format("%s%03d%s", path, ++pageNum, getExt(imgURL)));
-
+					
 					HttpURLConnection conn = (HttpURLConnection)new URL(imgURL).openConnection();
 					conn.setConnectTimeout(MAX_WAIT_TIME); //최대 5분까지 시간 지연 기다려줌
 					conn.setRequestMethod("GET");
 					conn.setRequestProperty("User-Agent", USER_AGENT);
 
-					InputStream in = conn.getInputStream(); //속도저하의 원인. 느린 이유는 결국 사이트가 느려서...
-
+					InputStream in = conn.getInputStream(); //속도저하의 원인
+					
 					while((len = in.read(buf))>0) fos.write(buf, 0, len);
+					
 					System.out.printf("%3d / %3d ...... 완료!\n", pageNum, numberOfPages);
 					fos.close();
 					in.close();
@@ -113,48 +121,42 @@ public class Downloader {
 		
 		//wasabisyrup, yuncomics, shencomics와 같은 아카이브 주소가 들어오는 경우
 		if(rawAddress.contains("http") && rawAddress.contains("archives")){
-			archiveAddress.add(rawAddress);
+			archiveAddress.add(toNewArchivesName(rawAddress)); //현재 아카이브명으로 변경
 			return archiveAddress;
 		}
 		
 		try{
 			//Jsoup을 이용하여 파싱. timeout은 5분
 			Document doc = Jsoup.connect(rawAddress).userAgent(USER_AGENT).timeout(MAX_WAIT_TIME).get();
-			Elements divContent = doc.select("div.content").select("a[target]");
 			
-			for(Element e : divContent){
-				String hrefURL = e.attr("href"); //만화 아카이브 주소(wasabisyrup)
-				
-				//쓸데없는 주소가 한두개씩 꼭 있어서 archives를 포함하는 아카이브 주소만 저장
-				if(hrefURL.contains("archives")) archiveAddress.add(hrefURL);
-			}
+			/* 정규식 좀더 강력하게 수정-> <div class="Content">에서 href=".../archives/.."가 포함된 모든 주소 파싱 */
+			Elements divContent = doc.select("div.content").select("[href*=/archives/]");
+			
+			for(Element e : divContent)
+				archiveAddress.add(toNewArchivesName(e.attr("href"))); //아카이브 주소를 최신으로 항상 맞춰줌
 		}
 		catch(Exception e){
 			e.printStackTrace();
 		}
 		return archiveAddress;
 	}
-
 	
 	/**
 	 * <p>1. Jsoup을 이용하여 아카이브 고속 파싱 시도
 	 * <p>2. 실패하면(=div.gallery-template가 없으면) HtmlUnit 이용한 아카이브 일반 파싱 시도
-	 * <p>3. 파싱된 Html코드를 포함한 소스 원문을 스트링값에 담음
-	 * <p>4. Jsoup을 이용하여 만화제목, 회차, 이미지 URL만 걸러냄
-	 * <p>5. foreach 돌려서 LinkedList에 순수 이미지 URL 저장후 리턴
-	 * @param rawAddress 순수 이미지주소를 포함한 Html 소스코드
-	 * @return 순수 이미지주소가 담긴 링크드리스트 반환
+	 * <p>3. 파싱된 Html코드를 포함한 소스 원문을 스트링값에 담아서 리턴
+	 * @param realAddress 실제 만화가 담긴 아카이브 주소
+	 * @return 이미지(.jpg) 주소가 포함된 HTML 소스코드
 	 */
-	private LinkedList<String> getImgList(String realAddress) {
-		
+	private String getHtmlPage(String realAddress) {
 		/* 필수! 로그 메세지 출력 안함 -> HtmlUnit 이용시 Verbose한 로그들이 너무 많아서 다 끔 */
 		java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF); 
 		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
 		
 		//pageSource = Html코드를 포함한 페이지 소스코드가 담길 스트링, domain = http://wasabisyrup.com <-마지막 / 안붙음!
-		String pageSource = "", domain = realAddress.substring(0, realAddress.indexOf("/archives"));
+		String pageSource = null;
+		
 		boolean highSpeed = false; //고속 파싱 성공시 true, 실패시 false
-		LinkedList<String> imgURL = new LinkedList<>();//만화 jpg 파일들의 주소가 담길 링크드리스트
 		
 		/*********************** Jsoup 이용한 고속 다운로드 부분 ******************************/
 		System.out.print("고속 연결 시도중 ... ");
@@ -199,6 +201,21 @@ public class Downloader {
 				webClient.close();
 			}
 		}
+		return pageSource;
+	}
+
+	/**
+	 * <p>1. Jsoup을 이용하여 만화제목, 회차, 이미지 URL만 걸러냄
+	 * <p>2. foreach 돌려서 LinkedList에 순수 이미지 URL 저장후 리턴
+	 * @param realAddress 실제 만화가 담긴 아카이브 주소
+	 * @return 순수 이미지주소가 담긴 링크드리스트 반환
+	 */
+	private LinkedList<String> getImgList(String realAddress) {
+		LinkedList<String> imgURL = new LinkedList<>();//만화 jpg 파일들의 주소가 담길 링크드리스트
+		
+		String domain = realAddress.substring(0, realAddress.indexOf("/archives"));
+		String pageSource = getHtmlPage(realAddress);
+		
 		/***************************************************************************************/
 		
 		System.out.println("이미지 추출중...");
@@ -212,9 +229,28 @@ public class Downloader {
 		/* <img class="lz-lazyload" src="/template/images/transparent.png" data-src="/storage/gallery/OrXeaIqMbEc/m0035_T6THtV9OvWI.jpg">
 		 * 위의 data-src부분을 찾아서 Elements에 저장한 뒤, foreach로 linkedlist에 저장 */
 		Elements data_src = doc.select("img[data-src]");
-		for(Element url : data_src) imgURL.add(domain+url.attr("data-src"));
-		
+		for(Element url : data_src) imgURL.add(toNewArchivesName(domain)+url.attr("data-src"));
 		return imgURL;
+	}
+
+	
+	/**
+	 * <p> 이미지 다운로드시 과거 아카이브명(shencomics, yuncomincs 등)이 들어가 있으면
+	 * <p> 이를 현재 아카이브명(wasabisyrup)으로 변경하지 않고 그대로 다운로드 시도하게 됨
+	 * <p> 따라서 제대로 다운로드가 되지 않는 현상 빈번
+	 * <p> 이를 해결하기 위해 수동으로 아카이브명을 항상 최신으로 유지
+	 * <p> 단순 순차탐색 사용 O(N)
+	 * @param archivesAddress 아카이브명이 포함되어 있을 수 있는 주소
+	 * @return 최신 아카이브명으로 변경된 주소
+	 */
+	private String toNewArchivesName(String archivesAddress){
+		String newArchivesName = archivesAddress;
+		for(int i=0;i<OLD_ARCHIVES_NAME.length;i++)
+			if(newArchivesName.contains(OLD_ARCHIVES_NAME[i])){
+				newArchivesName = newArchivesName.replace(OLD_ARCHIVES_NAME[i], NEW_ARCHIVES_NAME);
+				break;
+			}
+		return newArchivesName;
 	}
 	
 	//특수문자 제거 메서드
