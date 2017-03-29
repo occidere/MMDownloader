@@ -19,7 +19,7 @@ public class SystemInfo {
 	//마루마루 브라우저 주소
 	public static final String MARU_ADDR = "http://marumaru.in/";
 	//프로그램 버전. * 수정금지 *
-	public static final String VERSION = "제작자: occidere\t버전: 0.2.5 (2017.03.29)";
+	public static final String VERSION = "제작자: occidere\t버전: 0.2.6 (2017.03.30)";
 	
 	/**
 	 * <p>마루마루 인터넷창 열기
