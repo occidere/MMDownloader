@@ -15,7 +15,9 @@ import org.jsoup.Connection.Response;
 import java.util.LinkedList;
 import java.util.logging.Level;
 
+
 import java.net.URL;
+import java.net.URLEncoder;
 import java.net.HttpURLConnection;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -46,7 +48,6 @@ public class Downloader {
 	private final String OLD_ARCHIVES_NAME[] = { "shencomics", "yuncomics" }; //옛날 아카이브명
 	private final String NEW_ARCHIVES_NAME = "wasabisyrup"; //현재 아카이브명
 	
-	
 	/**
 	 * 순수 이미지 주소가 담긴 링크드리스트를 가지고 HttpURLConnection을 이용해 실제 다운로드 및 저장을 담당
 	 * @param rawAddress 순수 이미지주소를 포함한 HTML 태그 내용
@@ -58,7 +59,7 @@ public class Downloader {
 		System.out.printf("총 %d개\n", archiveAddress.size());
 		
 		byte[] buf = new byte[1048576]; //다운로드용 1MB 버퍼
-		int pageNum, numberOfPages, len;
+		int pageNum, numberOfPages, len, imageSize; //이미지 크기
 		
 		//http://www.shencomics.com/archives/533456와 같은 아카이브 주소
 		for(String realAddress : archiveAddress){
@@ -93,12 +94,14 @@ public class Downloader {
 					conn.setConnectTimeout(MAX_WAIT_TIME); //최대 5분까지 시간 지연 기다려줌
 					conn.setRequestMethod("GET");
 					conn.setRequestProperty("User-Agent", USER_AGENT);
+					conn.setRequestProperty("charset", "utf-8");
+					
+					imageSize = conn.getContentLength()>>>10; // KB
 
 					InputStream in = conn.getInputStream(); //속도저하의 원인
 					
-					while((len = in.read(buf))>0) fos.write(buf, 0, len);
-					
-					System.out.printf("%3d / %3d ...... 완료!\n", pageNum, numberOfPages);
+					while((len = in.read(buf))!=-1) fos.write(buf, 0, len);
+					System.out.printf("%3d / %3d ...... 완료! (%3d KB)\n", pageNum, numberOfPages, imageSize);
 					fos.close();
 					in.close();
 				}
@@ -119,21 +122,22 @@ public class Downloader {
 	private LinkedList<String> getArchiveAddress(String rawAddress){
 		LinkedList<String> archiveAddress = new LinkedList<>();
 		
+		rawAddress = toNewArchivesName(rawAddress);
+		
 		//wasabisyrup, yuncomics, shencomics와 같은 아카이브 주소가 들어오는 경우
 		if(rawAddress.contains("http") && rawAddress.contains("archives")){
-			archiveAddress.add(toNewArchivesName(rawAddress)); //현재 아카이브명으로 변경
+			archiveAddress.add(rawAddress);
 			return archiveAddress;
 		}
 		
 		try{
 			//Jsoup을 이용하여 파싱. timeout은 5분
-			Document doc = Jsoup.connect(rawAddress).userAgent(USER_AGENT).timeout(MAX_WAIT_TIME).get();
+			Document doc = Jsoup.connect(rawAddress).userAgent(USER_AGENT).header("charset", "utf-8").timeout(MAX_WAIT_TIME).get();
 			
 			/* 정규식 좀더 강력하게 수정-> <div class="Content">에서 href=".../archives/.."가 포함된 모든 주소 파싱 */
 			Elements divContent = doc.select("div.content").select("[href*=/archives/]");
 			
-			for(Element e : divContent)
-				archiveAddress.add(toNewArchivesName(e.attr("href"))); //아카이브 주소를 최신으로 항상 맞춰줌
+			for(Element e : divContent) archiveAddress.add(toNewArchivesName(e.attr("href")));
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -162,7 +166,7 @@ public class Downloader {
 		System.out.print("고속 연결 시도중 ... ");
 		try {
 			//POST방식으로 아예 처음부터 비밀번호를 body에 담아 전달
-			Response response = Jsoup.connect(realAddress).userAgent(USER_AGENT).data("pass", PASSWORD).followRedirects(true).execute();
+			Response response = Jsoup.connect(realAddress).userAgent(USER_AGENT).header("charset", "utf-8").data("pass", PASSWORD).followRedirects(true).execute();
 			Document preDoc = response.parse();
 			
 			//<div class="gallery-template">이 만화 담긴 곳. 만약 Jsoup 파싱시 내용 있으면 성공
@@ -229,10 +233,34 @@ public class Downloader {
 		/* <img class="lz-lazyload" src="/template/images/transparent.png" data-src="/storage/gallery/OrXeaIqMbEc/m0035_T6THtV9OvWI.jpg">
 		 * 위의 data-src부분을 찾아서 Elements에 저장한 뒤, foreach로 linkedlist에 저장 */
 		Elements data_src = doc.select("img[data-src]");
-		for(Element url : data_src) imgURL.add(toNewArchivesName(domain)+url.attr("data-src"));
+		
+		for(Element url : data_src) imgURL.add(encoding(domain+url.attr("data-src")));
+		
 		return imgURL;
 	}
-
+	/**
+	 * <p> 이미지 URL에 영어 이외의 문자가 포함된 경우 UTF-8로 인코딩 시켜주는 메서드
+	 * @param url 이미지 URL
+	 * @return UTF-8 형식의 이미지 URL
+	 */
+	private String encoding(String url){
+		StringBuilder utf8 = new StringBuilder();
+		int i, code;
+		for(i=0;i<url.length();i++){
+			code = url.charAt(i);
+			if(256<=code){ //ascii의 범위는 [0,255]
+				try {
+					utf8.append(URLEncoder.encode(url.substring(i, i+1), "utf-8"));
+				}
+				catch (Exception e) {
+					utf8 = new StringBuilder(url);
+					e.printStackTrace();
+				}
+			}
+			else utf8.append((char)code);
+		}
+		return utf8.toString();
+	}
 	
 	/**
 	 * <p> 이미지 다운로드시 과거 아카이브명(shencomics, yuncomincs 등)이 들어가 있으면
