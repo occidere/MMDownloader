@@ -12,9 +12,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.jsoup.Connection.Response;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.logging.Level;
-
 
 import java.net.URL;
 import java.net.URLEncoder;
@@ -38,36 +39,65 @@ public class Downloader {
 	
 	//만화 제목 = 폴더 이름
 	private String title, titleNo; //title=원피스, titleNo=337화
-	private final String USER_AGENT = "Chrome/30.0.0.0 Mobile"; //크롬 모바일 User-Agent
 	private final String PASSWORD = "qndxkr"; //만화 비밀번호
 	
-	private final int MAX_WAIT_TIME = 300000; //최대 대기시간 5분
+	final String USER_AGENT = "Chrome/30.0.0.0 Mobile"; //크롬 모바일 User-Agent
+	final int MAX_WAIT_TIME = 300000; //최대 대기시간 5분
 	
-	/* 중요! 아카이브명이 옛날 주소 그대로면 HttpURLConnection을 이용한 다운로드시 
-	 * 제대로 다운로드가 안됨 -> 항상 최신 아카이브명으로 집어넣어줘야 됨 */
-	private final String OLD_ARCHIVES_NAME[] = { "shencomics", "yuncomics" }; //옛날 아카이브명
-	private final String NEW_ARCHIVES_NAME = "wasabisyrup"; //현재 아카이브명
+	private final byte[] buf = new byte[1048576]; //다운로드용 1MB 버퍼
+
+	
+	/**
+	 * 선택된 페이지들만 다운로드
+	 * @param archiveAddress 전체 아카이브 주소가 담긴 리스트(어레이리스트 권장)
+	 * @param pages 선택된 페이지들의 번호가 담긴 리스트
+	 */
+	void selectiveDownload(List<Comic> archiveAddress, List<Integer> pages){
+		List<Comic> selectedArchiveAddress = new ArrayList<>(pages.size());
+		
+		try{
+			//선택한 페이지들만 가져와서 옮겨담음
+			for(int pageNum : pages)
+				selectedArchiveAddress.add(archiveAddress.get(pageNum));
+			
+			//선택된 페이지들로 구성된 리스트들만 다운로드 시도
+			download(selectedArchiveAddress);
+		}
+		catch(IndexOutOfBoundsException iobe){
+			//어지간한 페이지 에러는 다 여기서 잡힌다.
+			System.err.println("유효한 페이지를 입력해주세요.");
+			iobe.printStackTrace();
+		}
+	}
+	
 	
 	/**
 	 * 순수 이미지 주소가 담긴 링크드리스트를 가지고 HttpURLConnection을 이용해 실제 다운로드 및 저장을 담당
 	 * @param rawAddress 순수 이미지주소를 포함한 HTML 태그 내용
 	 * @param defaultPath 저장될 경로(C:\Marumaru\)
 	 */
-	public void download(String rawAddress) {
-		
-		LinkedList<String> archiveAddress = getArchiveAddress(rawAddress);
+	void download(List<Comic> archiveAddress) {
+		//아카이브 리스트에 담긴 개수 출력
 		System.out.printf("총 %d개\n", archiveAddress.size());
 		
-		byte[] buf = new byte[1048576]; //다운로드용 1MB 버퍼
+		String realAddress;
 		int pageNum, numberOfPages, len, imageSize; //이미지 크기
 		
 		//http://www.shencomics.com/archives/533456와 같은 아카이브 주소
-		for(String realAddress : archiveAddress){
-
+		for(Comic comic : archiveAddress){
+			
 			System.out.println("다운로드 시도중...");
 			
-			//순수 이미지주소가 담길 imgList 링크드리스트
-			LinkedList<String> imgList = getImgList(realAddress);
+			realAddress = comic.addr;
+			
+			//순수 이미지주소가 담길 imgList 리스트
+			List<String> imgList = getImgList(realAddress);
+			
+			/* 
+			 * comic.name 을 통해 각 만화의 제목을 가져오는게 훨씬 이득이나, 
+			 * 사이트에서 제대로 입력해놨을지의 신뢰도가 낮아서 기존 방식대로 getImgList()에서
+			 * 그때그때마다 tag로부터 제목 추출하여 전역변수를 통해 사용하는게 안전
+			 */
 			
 			//저장경로 = "기본경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\"
 			String path = String.format("%s%s/%s %s/", SystemInfo.DEFAULT_PATH, title, title, titleNo);
@@ -111,39 +141,7 @@ public class Downloader {
 			}			
 		}
 	}
-	
-	/**
-	 * <p>wasabisyrup, yuncomics, shencomics와 같은 아카이브주소가 들어오는 경우 -> 단편 다운로드에 해당 -> 바로 담아서 return
-	 * <p>mangaup/과 같은 업데이트 주소, manga/와 같은 신 전체보기 주소,
-	 * uid= 와 같이 구 전체보기 주소가 들어오는 경우 -> 아카이브 주소 파싱
-	 * @param rawAddress 위에 언급된 요소들이 포함된 처리 전 주소
-	 * @return wasabisyrup과 같은 아카이브 주소가 담긴 링크드리스트
-	 */
-	private LinkedList<String> getArchiveAddress(String rawAddress){
-		LinkedList<String> archiveAddress = new LinkedList<>();
-		
-		rawAddress = toNewArchivesName(rawAddress);
-		
-		//wasabisyrup, yuncomics, shencomics와 같은 아카이브 주소가 들어오는 경우
-		if(rawAddress.contains("http") && rawAddress.contains("archives")){
-			archiveAddress.add(rawAddress);
-			return archiveAddress;
-		}
-		
-		try{
-			//Jsoup을 이용하여 파싱. timeout은 5분
-			Document doc = Jsoup.connect(rawAddress).userAgent(USER_AGENT).header("charset", "utf-8").timeout(MAX_WAIT_TIME).get();
-			
-			/* 정규식 좀더 강력하게 수정-> <div class="Content">에서 href=".../archives/.."가 포함된 모든 주소 파싱 */
-			Elements divContent = doc.select("div.content").select("[href*=/archives/]");
-			
-			for(Element e : divContent) archiveAddress.add(toNewArchivesName(e.attr("href")));
-		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
-		return archiveAddress;
-	}
+
 	
 	/**
 	 * <p>1. Jsoup을 이용하여 아카이브 고속 파싱 시도
@@ -197,6 +195,8 @@ public class Downloader {
 				HtmlPage page = webClient.getPage(req);
 				
 				pageSource = page.asXml();
+				
+				System.out.println(pageSource);
 			}
 			catch(Exception e){
 				e.printStackTrace();
@@ -238,6 +238,7 @@ public class Downloader {
 		
 		return imgURL;
 	}
+	
 	/**
 	 * <p> 이미지 URL에 영어 이외의 문자가 포함된 경우 UTF-8로 인코딩 시켜주는 메서드
 	 * @param url 이미지 URL
@@ -260,25 +261,6 @@ public class Downloader {
 			else utf8.append((char)code);
 		}
 		return utf8.toString();
-	}
-	
-	/**
-	 * <p> 이미지 다운로드시 과거 아카이브명(shencomics, yuncomincs 등)이 들어가 있으면
-	 * <p> 이를 현재 아카이브명(wasabisyrup)으로 변경하지 않고 그대로 다운로드 시도하게 됨
-	 * <p> 따라서 제대로 다운로드가 되지 않는 현상 빈번
-	 * <p> 이를 해결하기 위해 수동으로 아카이브명을 항상 최신으로 유지
-	 * <p> 단순 순차탐색 사용 O(N)
-	 * @param archivesAddress 아카이브명이 포함되어 있을 수 있는 주소
-	 * @return 최신 아카이브명으로 변경된 주소
-	 */
-	private String toNewArchivesName(String archivesAddress){
-		String newArchivesName = archivesAddress;
-		for(int i=0;i<OLD_ARCHIVES_NAME.length;i++)
-			if(newArchivesName.contains(OLD_ARCHIVES_NAME[i])){
-				newArchivesName = newArchivesName.replace(OLD_ARCHIVES_NAME[i], NEW_ARCHIVES_NAME);
-				break;
-			}
-		return newArchivesName;
 	}
 	
 	//특수문자 제거 메서드
