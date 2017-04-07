@@ -4,8 +4,13 @@ import ui.UI;
 
 public class Main {
 	public static void main(String args[]){
-		UI ui = UI.getInstance();
-		ui.showMenu();
-		ui.close();
+		try{
+			UI ui = UI.getInstance();
+			ui.showMenu();
+			ui.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 }
