@@ -19,7 +19,7 @@ public class SystemInfo {
 	//마루마루 브라우저 주소
 	public static final String MARU_ADDR = "http://marumaru.in/";
 	//프로그램 버전. * 수정금지 *
-	public static final String VERSION = "제작자: occidere\t버전: 0.2.8 (2017.04.07)";
+	public static final String VERSION = "제작자: occidere\t버전: 0.2.9 (2017.04.23)";
 	
 	/**
 	 * <p>마루마루 인터넷창 열기
@@ -117,8 +117,8 @@ public class SystemInfo {
 				+ "         단, 6,8 처럼 아예 정상 페이지가 하나도 없을시엔 다운로드 안함\n"
 				+ "\n3. 다운로드 폴더 열기\n"
 				+ " - 기본적으로 GUI가 지원되야 합니다. 만일 폴더가 없더라도 자동으로 생성되고 열리게 됩니다.\n"
-				+ "  0) Windows의 경우 C:\\Users\\사용자\\Marumaru 폴더가 열립니다.\n"
-				+ "  1) Mac과 Linux의 경우 home/사용자/marumaru 폴더가 열립니다.\n"
+				+ "  0) Windows의 경우 C:\\Users\\사용자\\Marumaru\\ 폴더가 열립니다.\n"
+				+ "  1) Mac과 Linux의 경우 home/사용자/marumaru/ 폴더가 열립니다.\n"
 				+ "\n4. 마루마루 접속\n"
 				+ " - 기본적으로 GUI가 지원되어야 합니다. 사용자 PC의 기본 브라우저를 이용하여 마루마루 페이지에 접속합니다.\n"
 				+ "\n0. 종료\n"
