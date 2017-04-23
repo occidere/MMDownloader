@@ -45,6 +45,16 @@ public class Downloader {
 	final int MAX_WAIT_TIME = 300000; //최대 대기시간 5분
 	
 	private final byte[] buf = new byte[1048576]; //다운로드용 1MB 버퍼
+	
+	
+	/* 2017.04.23 기준 필요 ex) 무직선생 2, 3화의 경우
+	 * 중요! 아카이브명이 옛날 주소 그대로면 HttpURLConnection을 이용한 다운로드시 
+	 * 제대로 다운로드가 안됨 -> 항상 최신 아카이브명으로 집어넣어줘야 됨 
+	 * ### 현재 딱히 필요 없어서 주석처리함 ###
+	 */
+	private final String OLD_ARCHIVES_NAME[] = { "shencomics", "yuncomics" }; //옛날 아카이브명
+	private final String NEW_ARCHIVES_NAME = "wasabisyrup"; //현재 아카이브명
+	private final String BLOG = "blog"; //가끔 blog.yuncomics.com과 같은 형식이 있기에 찾아서 www로 바꿔줘야 됨
 
 	
 	/**
@@ -234,7 +244,9 @@ public class Downloader {
 		 * 위의 data-src부분을 찾아서 Elements에 저장한 뒤, foreach로 linkedlist에 저장 */
 		Elements data_src = doc.select("img[data-src]");
 		
-		for(Element url : data_src) imgURL.add(encoding(domain+url.attr("data-src")));
+		//아카이브 이름을 항상 최신으로 직접 변경
+		for(Element url : data_src)
+			imgURL.add(encoding( toNewArchivesName(domain) + url.attr("data-src") ));
 		
 		return imgURL;
 	}
@@ -261,6 +273,26 @@ public class Downloader {
 			else utf8.append((char)code);
 		}
 		return utf8.toString();
+	}
+	
+	/** ## 2017.04.23 기준 필요. ex) 무직선생 2, 3화에선 필수 ##
+	 * <p> 이미지 다운로드시 과거 아카이브명(shencomics, yuncomincs 등)이 들어가 있으면
+	 * <p> 이를 현재 아카이브명(wasabisyrup)으로 변경하지 않고 그대로 다운로드 시도하게 됨
+	 * <p> 따라서 제대로 다운로드가 되지 않는 현상 빈번
+	 * <p> 이를 해결하기 위해 수동으로 아카이브명을 항상 최신으로 유지
+	 * <p> 단순 순차탐색 사용 O(N)
+	 * <p> blog.yuncomics.com에서 blog를 www로 바꿔주는 기능도 추가.(없으면 blog.wasabisyrup.com 접속하려다 에러남)
+	 * @param archivesAddress 아카이브명이 포함되어 있을 수 있는 주소
+	 * @return 최신 아카이브명으로 변경된 주소
+	 */
+	private String toNewArchivesName(String archivesAddress){
+		String newArchivesName = archivesAddress.replace(BLOG, "www"); //blog.yuncomics.com을 www.최신아카이브.com으로 변경
+		for(int i=0;i<OLD_ARCHIVES_NAME.length;i++)
+			if(newArchivesName.contains(OLD_ARCHIVES_NAME[i])){
+				newArchivesName = newArchivesName.replace(OLD_ARCHIVES_NAME[i], NEW_ARCHIVES_NAME);
+				break;
+			}
+		return newArchivesName;
 	}
 	
 	//특수문자 제거 메서드
