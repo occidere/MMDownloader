@@ -30,16 +30,8 @@ public class Preprocess {
 		return instance;
 	}
 	
-	/* 중요! 아카이브명이 옛날 주소 그대로면 HttpURLConnection을 이용한 다운로드시 
-	 * 제대로 다운로드가 안됨 -> 항상 최신 아카이브명으로 집어넣어줘야 됨 
-	 * ### 현재 딱히 필요 없어서 주석처리함 ###
-	private final String OLD_ARCHIVES_NAME[] = { "shencomics", "yuncomics" }; //옛날 아카이브명
-	private final String NEW_ARCHIVES_NAME = "wasabisyrup"; //현재 아카이브명
-	*/
-	
 	private Downloader downloader; //다운로더 객체
 
-	
 	/**
 	 * UI에서 주소를 스트링으로 입력받아 아카이브 리스트를 만들어주는 메서드
 	 * @param rawAddress 만화 주소
@@ -123,26 +115,6 @@ public class Preprocess {
 		}
 		return archiveAddress;
 	}
-	
-	
-	/** ## 2017.04.04 기준 없어도 정상작동하기에 주석처리 ##
-	 * <p> 이미지 다운로드시 과거 아카이브명(shencomics, yuncomincs 등)이 들어가 있으면
-	 * <p> 이를 현재 아카이브명(wasabisyrup)으로 변경하지 않고 그대로 다운로드 시도하게 됨
-	 * <p> 따라서 제대로 다운로드가 되지 않는 현상 빈번
-	 * <p> 이를 해결하기 위해 수동으로 아카이브명을 항상 최신으로 유지
-	 * <p> 단순 순차탐색 사용 O(N)
-	 * @param archivesAddress 아카이브명이 포함되어 있을 수 있는 주소
-	 * @return 최신 아카이브명으로 변경된 주소
-	private String toNewArchivesName(String archivesAddress){
-		String newArchivesName = archivesAddress;
-		for(int i=0;i<OLD_ARCHIVES_NAME.length;i++)
-			if(newArchivesName.contains(OLD_ARCHIVES_NAME[i])){
-				newArchivesName = newArchivesName.replace(OLD_ARCHIVES_NAME[i], NEW_ARCHIVES_NAME);
-				break;
-			}
-		return newArchivesName;
-	}
-	*/
 	
 	/**
 	 * 선택적 다운로드 하기 전 (0번. 원피스 1화) 이런식으로 만화 리스트 보여주기
