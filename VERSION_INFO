@@ -1,4 +1,4 @@
-VERSION=0.2.9.5
+VERSION=0.3.0.0
 UPDATED_DATE=2017.04.28
-Windows=https://github.com/occidere/MMDownloader/raw/master/MMdownloader_0.2.9_Windows.zip
-Others=https://github.com/occidere/MMDownloader/raw/master/MMDownloader_0.2.9_Mac_Linux.zip
+Windows=https://github.com/occidere/MMDownloader/raw/master/MMdownloader_0.3.0.0_Windows.zip
+Others=https://github.com/occidere/MMDownloader/raw/master/MMDownloader_0.3.0.0_Mac_Linux.zip
