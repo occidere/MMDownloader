@@ -146,9 +146,10 @@ public class Downloader {
 					in.close();
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					//다운로드 중 에러 발생시 에러 로그를 txt형태로 저장
+					SystemInfo.saveErrLog(String.format("%s_%s_%03d", title, titleNo, pageNum), e);
 				}
-			}			
+			}
 		}
 	}
 
