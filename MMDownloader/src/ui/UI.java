@@ -11,7 +11,7 @@ public class UI {
 	
 	//제작자 출력. 수정 금지
 	private UI(){
-		System.out.println(SystemInfo.VERSION);
+		SystemInfo.printVersionInfo();
 	}
 	
 	private static UI instance;
@@ -24,15 +24,14 @@ public class UI {
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		
-		//Scanner sc = new Scanner(System.in);
-		
 		Preprocess preprocess = Preprocess.getInstance();
 
 		int menuNum = Integer.MAX_VALUE;
 		String comicAddress;
 
 		while (menuNum != EXIT) {
-			System.out.println("메뉴를 선택하세요\n  1. 만화 다운로드\n  2. 선택적 다운로드\n  3. 다운로드 폴더 열기\n  4. 마루마루 접속\n  9. 도움말\n  0. 종료");
+			
+			printMenu(); //메뉴 출력
 			menuNum = Integer.parseInt(in.readLine());
 
 			switch (menuNum) {
@@ -58,6 +57,10 @@ public class UI {
 			case 4:
 				SystemInfo.openBrowser();
 				break;
+				
+			case 8:
+				SystemInfo.printLatestVersionInfo(in);
+				break;
 			
 			case 9:
 				SystemInfo.help();
@@ -70,6 +73,22 @@ public class UI {
 		}
 		
 		in.close();
+	}
+	
+	/**
+	 * <p>UI에 보여줄 메뉴 출력 메서드
+	 */
+	public static void printMenu(){
+		String menu = 
+				"메뉴를 선택하세요\n"+
+				"  1. 만화 다운로드\n"+
+				"  2. 선택적 다운로드\n"+
+				"  3. 다운로드 폴더 열기\n"+
+				"  4. 마루마루 접속\n"+
+				"  8. 업데이트 확인\n"+
+				"  9. 도움말\n"+
+				"  0. 종료";
+		System.out.println(menu);
 	}
 	
 	public void close(){
