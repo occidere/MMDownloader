@@ -22,6 +22,16 @@
 * 만일 고속 파싱에 실패하면, HtmlUnit을 이용하여 자바스크립트를 포함하여 페이지를 유닛테스트 개념으로 읽어들인 뒤, 이미지를 다운로드 합니다. 초기 자바스크립트 파싱 과정(=이미지 추출과정)에서 시간이 다소 소요될 수 있습니다.
 * 다운로드 속도는 한 편당 최대 5분까지 소요되며, 이는 마루마루 서버 상태와 PC의 네트워크 속도에 제일 큰 영향을 받습니다.
 
+--- ver 0.3.0.2 ---
+* Comic 클래스 내부에서 Image URL이 담길 List, title, titleNo를 모두 관리 -> 전역변수 title, titleNo 제거
+* Comic 클래스에 getter/setter 적용
+* Comic 객체 내에 List, title, titleNo를 저장하기 위한 parseImageURL() 메서드 새로 생성 / 기존에 사용되던 getImgList() 제거
+* 항상 Domain을 최신 아카이브로 설정 / toNewArchivesName() 제거, 전역변수 OLD_ARCHIVES_NAME, NEW_ARCHIVES_NAME, BLOG 제거
+* 아카이브 페이지 파싱 시 실패하면 로그파일로 저장
+* Downloader.java 내부에 다운로드에 사용되는 FileOutputStream 등의 객체를 모두 전역변수화
+* printError(String msg, boolean exitProgram) 메서드 새로 생성
+* 기타 오타 수정 및 final 변수명 재설정
+
 --- ver 0.3.0.0 ---
 * 업데이트 확인 기능 추가!
 * 서버에 현재 버전보다 최신 버전이 있는 경우 다운로드 여부를 물어봄.
