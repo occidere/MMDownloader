@@ -14,6 +14,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import downloader.Downloader;
+import sys.SystemInfo;
 
 public class Preprocess {
 	
@@ -24,9 +25,7 @@ public class Preprocess {
 
 	private static Preprocess instance;
 	public static Preprocess getInstance(){
-		if(instance==null){
-			instance = new Preprocess();
-		}
+		if(instance==null) instance = new Preprocess();
 		return instance;
 	}
 	
@@ -59,7 +58,7 @@ public class Preprocess {
 				downloader.selectiveDownload(archiveAddress, pages);
 			}
 			catch(NullPointerException npe){
-				System.err.println("해당 페이지와 매칭되는 만화가 없습니다.");
+				SystemInfo.printError("해당 페이지와 매칭되는 만화가 없습니다.", false);
 			}
 			catch(Exception e){
 				e.printStackTrace();
@@ -77,6 +76,7 @@ public class Preprocess {
 	 */
 	private List<Comic> getArchiveAddress(String rawAddress){
 		List<Comic> archiveAddress = null;
+		Comic comic;
 		
 		//rawAddress = toNewArchivesName(rawAddress);
 		
@@ -86,13 +86,20 @@ public class Preprocess {
 		//wasabisyrup, yuncomics, shencomics와 같은 아카이브 주소가 들어오는 경우
 		if(rawAddress.contains("http") && rawAddress.contains("archives")){
 			archiveAddress = new ArrayList<>(1);
-			archiveAddress.add(new Comic("단편 아카이브 다운로드", rawAddress)); //아카이브 주소가 들어왔을 때
+			comic = new Comic();
+			comic.setTitle("단편 아카이브 다운로드");
+			comic.setAddress(rawAddress);
+			archiveAddress.add(comic);
 			return archiveAddress;
 		}
 		
 		try{
 			//Jsoup을 이용하여 파싱. timeout은 5분
-			Document doc = Jsoup.connect(rawAddress).userAgent(downloader.USER_AGENT).header("charset", "utf-8").timeout(downloader.MAX_WAIT_TIME).get();
+			Document doc = Jsoup.connect(rawAddress)
+					.userAgent(downloader.USER_AGENT)
+					.header("charset", "utf-8")
+					.timeout(downloader.MAX_WAIT_TIME)
+					.get();
 			
 			/* 정규식 좀더 강력하게 수정-> <div class="Content">에서 href=".../archives/.."가 포함된 모든 주소 파싱 */
 			Elements divContent = doc.select("div.content").select("[href*=/archives/]");
@@ -107,7 +114,10 @@ public class Preprocess {
 				
 				//archiveAddr = toNewArchivesName(e.attr("href").trim());
 				archiveAddr = e.attr("href").trim();
-				archiveAddress.add(new Comic(archiveTitle, archiveAddr));
+				comic = new Comic();
+				comic.setTitle(archiveTitle);
+				comic.setAddress(archiveAddr);
+				archiveAddress.add(comic);
 			}
 		}
 		catch(Exception e){
@@ -123,7 +133,7 @@ public class Preprocess {
 	private void showList(List<Comic> archiveAddress){
 		int idx = 0;
 		for(Comic comic : archiveAddress)
-			System.out.println(String.format("%3d. %s", idx++, comic.title));
+			System.out.println(String.format("%3d. %s", idx++, comic.getTitle()));
 	}
 	
 	/**
@@ -189,7 +199,7 @@ public class Preprocess {
 		}
 		catch(IndexOutOfBoundsException iobe){
 			//어지간한 페이지 에러는 다 여기서 잡힌다.
-			System.err.println("유효한 페이지를 입력해주세요.");
+			SystemInfo.printError("유효한 페이지를 입력해주세요.", false);
 		}
 		catch(Exception e){
 			e.printStackTrace();
