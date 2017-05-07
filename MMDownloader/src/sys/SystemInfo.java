@@ -34,16 +34,16 @@ public class SystemInfo {
 	public static final String ERROR_LOG_PATH = DEFAULT_PATH + "log/";
 	//마루마루 브라우저 주소
 	public static final String MARU_ADDR = "http://marumaru.in/";
-	
 	//최신 버전 공지할 페이지 주소
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.3.0.0"; //프로그램 버전
-	private static final String UPDATED_DATE = "2017.04.28"; //업데이트 날짜
-	private static final String VERSION_INFO = String.format("제작자: occidere\t현재버전: %s (%s)", VERSION, UPDATED_DATE);
+	private static final String VERSION = "0.3.0.2"; //프로그램 버전
+	private static final String UPDATED_DATE = "2017.05.07"; //업데이트 날짜
+	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
+	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
-	/* 최신 버전 버전 */
+	/* 최신 버전 버전. 서버 연결해서 정보 받아오기 전까진 null */
 	private static String LATEST_VERSION = null;
 	private static String LATEST_UPDATED_DATE = null;
 	private static String LATEST_VERSION_INFO = null;
@@ -51,9 +51,11 @@ public class SystemInfo {
 	private static String LATEST_OTHERS = null; //다른OS 최신버전 링크
 	
 	/**
-	 * <p>현재 버전 출력
+	 * <p>제작자 정보와 현재 버전 출력.
+	 * <p>프로그램 첫 시작시 보여줄 정보.
 	 */
 	public static void printVersionInfo(){
+		System.out.print(DEVELOPER+"\t");
 		System.out.println(VERSION_INFO);
 	}
 
@@ -80,11 +82,12 @@ public class SystemInfo {
 				e.printStackTrace();
 			}
 			finally{
-				LATEST_VERSION_INFO = String.format("제작자: occidere\t최신버전: %s (%s)", LATEST_VERSION, LATEST_UPDATED_DATE);
+				LATEST_VERSION_INFO = String.format("최신버전: %s (%s)", LATEST_VERSION, LATEST_UPDATED_DATE);
 			}
 		}
-		printVersionInfo();
-		System.out.println(LATEST_VERSION_INFO);
+		
+		System.out.println(VERSION_INFO); //현재 버전 출력
+		System.out.println(LATEST_VERSION_INFO); //서버의 최신 버전 출력
 		
 		//최신버전 체크가 제대로 됬을 때, 현재 버전이 최신 버전보다 낮으면 업데이트 여부 물어봄.
 		if(!LATEST_VERSION_INFO.contains("연결실패")){
@@ -92,6 +95,7 @@ public class SystemInfo {
 			int latestVersion = Integer.parseInt(LATEST_VERSION.replace(".", ""));
 			
 			if(curVersion < latestVersion) downloadLatestVersion(in);
+			else if(curVersion == latestVersion) System.out.println("현재 최신버전입니다!");
 		}
 	}
 	
@@ -129,7 +133,7 @@ public class SystemInfo {
 					//OS가 윈도우 이외면 파일 이름 = MMdownloader_0.2.9_Mac,Linux.zip
 					else fileName = LATEST_OTHERS.substring(LATEST_OTHERS.lastIndexOf("/")+1);
 					
-					System.out.println("업데이트중...");
+					System.out.println("다운로드중...");
 					System.out.println("저장 위치: "+DEFAULT_PATH+fileName);
 					
 					fos = new FileOutputStream(DEFAULT_PATH+fileName);
@@ -152,8 +156,8 @@ public class SystemInfo {
 					is.close();
 					
 					//마지막 로그 출력
-					System.out.printf("%3.2fMB / %3.2fMB ... 완료!\n", accumSize, totalSize);
-					System.out.println("업데이트 완료!");
+					System.out.printf("%5.2fMB / %5.2fMB ... 완료!\n", accumSize, totalSize);
+					System.out.println("최신버전 다운로드 완료!");
 				}
 				else if(select.equalsIgnoreCase("n")){
 					isCorrectlySelected = true;
@@ -287,7 +291,7 @@ public class SystemInfo {
 	 * @param name 에러 발생한 만화제목(제목+회차)
 	 * @param e 예외 발생 객체
 	 */
-	public static void saveErrLog(String name, Exception e) {
+	public static void saveErrLog(String name, String message, Exception e) {
 		try {
 			//에러 발생 시간정보. 연-월-일_시-분-초
 			String time = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
@@ -296,13 +300,14 @@ public class SystemInfo {
 			//로그파일 제목 예: 2017-04-28_17-17-24_원피스_17화_003.txt
 			String logfile = String.format("%s_%s.txt", time, name).replace(" ", "_");
 			
-			System.err.printf("에러 발생! %s\n", logfile);
+			printError("에러 발생! "+logfile, false);
 			
 			makeDir(ERROR_LOG_PATH); //로그파일 저장 경로 없을 시를 대비해 만듦
 			
 			/* 로그 저장 (이어쓰기) */
 			PrintWriter pw = new PrintWriter(new FileWriter(ERROR_LOG_PATH + "/" + logfile, true));
 			pw.write(logfile + crlf);
+			pw.write(message + crlf);
 			e.printStackTrace(pw);
 			pw.write(crlf);
 			pw.close();
@@ -311,6 +316,16 @@ public class SystemInfo {
 			System.err.println("로그 저장 실패!");
 			ex.printStackTrace();
 		}
+	}
+	
+	/**
+	 * 에러 출력 메서드.
+	 * @param msg 출력할 에러 내용
+	 * @param exitProgram (0: 종료하지 않음, 1: 프로그램 종료)
+	 */
+	public static void printError(String msg, boolean exitProgram){
+		System.err.println(msg);
+		if(exitProgram) System.exit(0);
 	}
 	
 	/**
