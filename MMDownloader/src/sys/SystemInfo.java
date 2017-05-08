@@ -38,8 +38,8 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.3.0.2"; //프로그램 버전
-	private static final String UPDATED_DATE = "2017.05.07"; //업데이트 날짜
+	private static final String VERSION = "0.3.0.3"; //프로그램 버전
+	private static final String UPDATED_DATE = "2017.05.08"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
@@ -116,7 +116,7 @@ public class SystemInfo {
 			InputStream is;
 			URLConnection conn;
 			
-			String select, fileName = null;
+			String select, fileName = null, fileURL = null;
 			boolean isCorrectlySelected = false;
 			
 			while(!isCorrectlySelected){ //다운로드 받거나(y) 취소(n)를 제대로 선택할 때 까지 반복.
@@ -127,17 +127,24 @@ public class SystemInfo {
 				if(select.equalsIgnoreCase("y")){
 					isCorrectlySelected = true;
 					
+					makeDir(); //Marumaru폴더 생성
+					
 					//OS가 윈도우면, 파일 이름 = MMdownloader_0.2.9_Windows.zip
-					if(OS_NAME.contains("Windows")) 
+					if(OS_NAME.contains("Windows")){
 						fileName = LATEST_WINDOWS.substring(LATEST_WINDOWS.lastIndexOf("/")+1);
+						fileURL = LATEST_WINDOWS;
+					}
 					//OS가 윈도우 이외면 파일 이름 = MMdownloader_0.2.9_Mac,Linux.zip
-					else fileName = LATEST_OTHERS.substring(LATEST_OTHERS.lastIndexOf("/")+1);
+					else{
+						fileName = LATEST_OTHERS.substring(LATEST_OTHERS.lastIndexOf("/")+1);
+						fileURL = LATEST_OTHERS;
+					}
 					
 					System.out.println("다운로드중...");
 					System.out.println("저장 위치: "+DEFAULT_PATH+fileName);
 					
 					fos = new FileOutputStream(DEFAULT_PATH+fileName);
-					conn = (HttpURLConnection)new URL(LATEST_WINDOWS).openConnection();
+					conn = (HttpURLConnection)new URL(fileURL).openConnection();
 					conn.setConnectTimeout(300000);
 					is = conn.getInputStream();
 					
