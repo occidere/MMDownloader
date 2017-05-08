@@ -12,6 +12,7 @@ public class UI {
 	//제작자 출력. 수정 금지
 	private UI(){
 		SystemInfo.printVersionInfo();
+		SystemInfo.makeDir(); //시작과 동시에 Marumaru폴더 생성
 	}
 	
 	private static UI instance;
