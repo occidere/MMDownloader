@@ -324,7 +324,10 @@ public class Downloader {
 			}
 			else utf8.append((char)code);
 		}
-		return utf8.toString();
+		//띄어쓰기까지 UTF-8로 바꿔줌
+		String utf8String = utf8.toString().replace(" ", "%20");
+		//System.out.println(utf8String);
+		return utf8String;
 	}
 	
 	/** ## 2017.05.07 현재 항상 아카이브 도메인을 최신으로 맞춰주는 방식으로 변경되어 Deprecated로 설정 ##
