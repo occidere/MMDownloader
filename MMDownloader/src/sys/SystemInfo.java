@@ -1,18 +1,23 @@
 package sys;
 
 import java.awt.Desktop;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
+
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.HttpURLConnection;
 import java.net.URI;
+
 import java.text.SimpleDateFormat;
+
 import java.util.Date;
+import java.util.Properties;
 
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
@@ -38,8 +43,8 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.3.0.3"; //프로그램 버전
-	private static final String UPDATED_DATE = "2017.05.08"; //업데이트 날짜
+	private static final String VERSION = "0.3.0.4"; //프로그램 버전
+	private static final String UPDATED_DATE = "2017.06.13"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
