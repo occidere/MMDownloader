@@ -95,7 +95,7 @@ public class Preprocess {
 			
 			/* 정규식 좀더 강력하게 수정-> <div class="Content">에서 href=".../archives/.."가 포함된 모든 주소 파싱 */
 			Elements divContent = doc.select("div.content").select("[href*=/archives/]");
-			System.out.println(divContent);
+			//System.out.println(divContent);
 
 			for(Element e : divContent){
 				archiveTitle = e.text().trim();
