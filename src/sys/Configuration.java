@@ -101,6 +101,10 @@ public class Configuration {
 			trimmedConfLine = confLine.replaceAll(" ", "");
 			if(isComment(trimmedConfLine)==false && isCorrectFormat(trimmedConfLine)){
 				nameValue = trimmedConfLine.split("=");//nameValue[0] = name, nameValue[1] = value
+				
+				System.out.println(nameValue[0]);
+				System.out.println(nameValue[1]);
+				
 				/* 설정값 적용 부분 */
 				if(nameValue[0].equals("PATH")){
 					SystemInfo.PATH = nameValue[1] + SystemInfo.fileSeparator; //PATH 설정 적용
@@ -203,7 +207,8 @@ public class Configuration {
 	 */
 	private static String removeBOM(String str){
 		char BOM = (char)65279;
-		if(str.charAt(0) == BOM) str = str.substring(1);
+		if(str.length()<=0) return str;
+		else if(str.charAt(0) == BOM) str = str.substring(1);
 		return str;
 	}
 }

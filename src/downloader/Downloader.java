@@ -118,7 +118,7 @@ public class Downloader {
 			
 			//저장경로 = "기본경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\" 또는,
 			//저장경로 = "사용자 설정 경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\"
-			String path = String.format("%s%s/%s %s/", SystemInfo.PATH, title, title, titleNo);
+			String path = String.format("%s/%s/%s %s/", SystemInfo.PATH, title, title, titleNo);
 			
 			pageNum = 0;
 			numberOfPages = imgList.size();
