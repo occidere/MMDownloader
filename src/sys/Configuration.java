@@ -102,9 +102,6 @@ public class Configuration {
 			if(isComment(trimmedConfLine)==false && isCorrectFormat(trimmedConfLine)){
 				nameValue = trimmedConfLine.split("=");//nameValue[0] = name, nameValue[1] = value
 				
-				System.out.println(nameValue[0]);
-				System.out.println(nameValue[1]);
-				
 				/* 설정값 적용 부분 */
 				if(nameValue[0].equals("PATH")){
 					SystemInfo.PATH = nameValue[1] + SystemInfo.fileSeparator; //PATH 설정 적용
