@@ -330,7 +330,7 @@ public class SystemInfo {
 			//로그파일 제목 예: 2017-04-28_17-17-24_원피스_17화_003.txt
 			String logfile = String.format("%s_%s.txt", time, name).replace(" ", "_");
 			
-			printError("에러 발생! "+logfile, false);
+			printError("[Error] "+logfile, false);
 			
 			makeDir(ERROR_LOG_PATH); //로그파일 저장 경로 없을 시를 대비해 만듦
 			
@@ -343,7 +343,7 @@ public class SystemInfo {
 			pw.close();
 			
 		} catch (Exception ex) {
-			System.err.println("로그 저장 실패!");
+			printError("[Error] 로그 저장 실패", false);
 			ex.printStackTrace();
 		}
 	}
@@ -356,152 +356,6 @@ public class SystemInfo {
 	public static void printError(String msg, boolean exitProgram){
 		System.err.println(msg);
 		if(exitProgram) System.exit(1);
-	}
-	
-	
-	/**************** 경로 변경 제대로 안되고, newline 출력도 안되고, 읽기 & 쓰기 모두 에러남 *****************************/
-	
-	/**
-	 * <b>저장 경로 변경 메서드</b></br>
-	 * path 값으로 주어진 저장경로 폴더를 생성 시도</br>
-	 * 폴더 생성에 실패하면 저장경로를 이전경로 유지 및 에러 출력</br>
-	 * @param path 변경할 새로운 저장경로
-	 */
-	public static void changePath(String path){
-		File file = new File(path);
-		if(file.mkdirs()) {
-			PATH = path;
-			writeConf("path", PATH);
-			System.out.println("경로 변경 완료");
-			System.out.println("현재 저장경로: "+PATH);
-		}
-		else if(file.exists() == false){ //이미 존재하는 폴더도 아니면서 생성도 실패한 "잘못된 경로" 인 경우
-			printError("잘못된 경로입니다.", false);
-		}
-	}
-	
-	/**
-	 * <b>설정파일 읽는 메서드</b></br>
-	 * 설정파일은 반드시 디폴트 경로 내부에 MMDownloader.conf 로 존재해야 하며,</br>
-	 * 내부에는 {@code name=value} 형태로 매핑이 되어있어야 한다.</br>
-	 * conf파일 내부 주석은 #로 시작한다.</br>
-	 * 20170625기준 저장경로(path)만 읽어들여 처리함</br>
-	 */
-	public static synchronized void readConf(){
-		
-		try{
-			File confFile = new File(DEFAULT_PATH + "/" + CONF_FILE);
-			if(confFile.exists() == false){
-				//설정파일이 존재하지 않으면 그냥 메서드 종료
-				System.out.println("없으므로 종료");
-				return;
-			}
-			
-			StringBuilder readStr = new StringBuilder();
-			String line, name, value;
-			int indexOfEqualSign = -1; // =의 위치
-			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(confFile)));
-			
-			//conf파일 읽어서 배열에 저장
-			while((line = br.readLine()) != null){
-				if(line.startsWith("#") == false){ //주석이 아닌것 공백은 그때그때 제거
-					line = line.replaceAll(" ", "");
-				}
-				readStr.append(line+"\n");
-			}
-			br.close();
-			System.out.println(readStr);
-			confArr = readStr.toString().replaceAll(" ", "").split(lineSeperator);
-			
-			//배열값을 읽어서 실제 처리
-			for(String confLine : confArr){
-				
-				confLine  = confLine.replaceAll(" ", "");
-				
-				//주석이나, =가 없는 비정상 라인의 경우 건너뛴다.
-				if( confLine.startsWith("#") || confLine.contains("=")==false ){
-					continue;
-				}
-				
-				indexOfEqualSign = confLine.indexOf("=");
-				name = confLine.substring(0, indexOfEqualSign);
-				value = confLine.substring(indexOfEqualSign + 1);
-				
-				//저장경로(path) 읽어들여 반영
-				if(confLine.startsWith("path")){
-					changePath(value);
-				}
-				
-			}
-			
-		}
-		catch(Exception e){
-			e.printStackTrace();
-			printError("설정 파일 읽기 실패", false);
-		}
-	}
-	
-	/**
-	 * <b>설정파일 쓰기 메서드</b></br>
-	 * name=value 형태로 설정파일에 추가한다.</br>
-	 * 설정파일이 없으면 새로 생성된다.</br>
-	 * @param name 설정 변수 이름
-	 * @param value 설정 변수 값
-	 */
-	public static synchronized void writeConf(String name, String value){
-		try{
-			File confFile = new File(DEFAULT_PATH + "/" + CONF_FILE);
-			if(confFile.exists() == false){ //설정파일 없으면 새로 만듦
-				System.out.println("새로 생성");
-				confFile.createNewFile();
-			}
-			
-			String newConfArr[] = new String[confArr.length + 1]; //1개의 설정파일이 추가되므로 기존 설정파일크기 + 1
-			
-			String trimmedConfLine; //공백 제거된 라인
-
-			boolean isWrote = false;
-			int idx = 0;
-			
-			//배열값을 읽어서 실제 처리
-			for(String confLine : confArr){
-				trimmedConfLine = confLine;
-				if(confLine.contains(" ")) trimmedConfLine  = confLine.replaceAll(" ", "");
-				
-				//주석이나, =가 없는 비정상 라인의 경우 건너뛴다.
-				if( trimmedConfLine.startsWith("#") || trimmedConfLine.contains("=")==false ){
-					newConfArr[idx++] = confLine; //주석 등은 원형 그대로 저장
-					continue;
-				}
-				
-				//원하는 설정값 찾았으면 변경
-				//공백 등이 제거된 최적의 상태로 저장
-				if(trimmedConfLine.startsWith(name)){
-					trimmedConfLine = name+"="+value;
-					isWrote = true; //쓰기 성공 체크
-				}
-				newConfArr[idx++] = trimmedConfLine;
-			}
-			
-			//설정파일 내에 원하는 설정값이 없어서 바꾸기 실패한 경우 새로 입력
-			if(isWrote == false){
-				newConfArr[0] = name+"="+value;
-			}
-			
-			//새로 변경된 설정파일 모두 입력
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(confFile, true))); //이어쓰기 모드
-			for(String confLine : newConfArr){
-				bw.write(confLine + lineSeperator);
-			}
-			bw.flush();
-			bw.close();
-			
-			confArr = newConfArr; //기존 설정파일 내역을 새로 생성된 설정파일로 갱신
-		}
-		catch(Exception e){
-			e.printStackTrace();
-			printError("설정 파일 쓰기 실패", false);
-		}
 	}
 	
 	/**
