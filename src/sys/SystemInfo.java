@@ -36,30 +36,26 @@ import org.jsoup.nodes.Document;
 public class SystemInfo {
 	private SystemInfo(){}
 	
+	//운영체제별 파일 구분자
+	static final String fileSeparator = File.separator; //윈도우는 \, 나머지는 /
 	//운영체제별 줄바꿈 문자
-	private static transient final String lineSeperator = System.getProperty("line.seperator");
+	static final String lineSeparator = System.getProperty("line.separator"); //윈도우는 \r\n, 유닉스 계열은 \n, 맥은 \r
 	//OS이름 ex) Windows 10, Linux 등..
-	public static transient final String OS_NAME = System.getProperty("os.name");
+	static transient final String OS_NAME = System.getProperty("os.name");
 	//디폴트 저장 디렉토리 ex) C:\Users\occid\Marumaru 또는 home/occidere/marumaru
-	public static transient final String DEFAULT_PATH = System.getProperty("user.home")+"/Marumaru/";
+	public static transient final String DEFAULT_PATH = System.getProperty("user.home")+ fileSeparator + "Marumaru";
 	//다운로드 저장할 디렉토리. 
 	public static transient String PATH = DEFAULT_PATH;
 	//에러 로그 저장 경로(무조건 디폴트 경로에 위치)
-	public static final String ERROR_LOG_PATH = DEFAULT_PATH + "log/";
+	public static final String ERROR_LOG_PATH = DEFAULT_PATH + fileSeparator + "log";
 	//마루마루 브라우저 주소
 	public static final String MARU_ADDR = "http://marumaru.in/";
 	//최신 버전 공지할 페이지 주소
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
-	//conf파일 이름
-	private transient final static String CONF_FILE = "MMDownloader.conf";
-	
-	//conf파일 어레이
-	private transient static String[] confArr = new String[0];
-	
 	/* <수정 금지> 프로그램 정보 */
 	private static final String VERSION = "0.3.1.0"; //프로그램 버전
-	private static final String UPDATED_DATE = "2017.06.25"; //업데이트 날짜
+	private static final String UPDATED_DATE = "2017.06.26"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
@@ -71,12 +67,13 @@ public class SystemInfo {
 	private static String LATEST_OTHERS = null; //다른OS 최신버전 링크
 	
 	/**
-	 * <p>제작자 정보와 현재 버전 출력.
+	 * <p>제작자 정보와 현재 버전, 저장경로 등 프로그램 정보 출력.
 	 * <p>프로그램 첫 시작시 보여줄 정보.
 	 */
-	public static void printVersionInfo(){
+	public static void printProgramInfo(){
 		System.out.print(DEVELOPER+"\t");
 		System.out.println(VERSION_INFO);
+		System.out.println("저장경로: "+PATH);
 	}
 
 	/**
@@ -258,8 +255,7 @@ public class SystemInfo {
 	 * @param path String 타입의 경로
 	 */
 	public static void makeDir(String path){
-		File f = new File(path);
-		if(!f.exists()) f.mkdirs();
+		new File(path).mkdirs(); //존재하지 않는 경우만 새로 생성함
 	}
 	
 	/**
@@ -270,35 +266,35 @@ public class SystemInfo {
 				"## 도움말 ##\n"
 				+ "1. 만화 다운로드\n"
 				+ " - 다운받을 만화 주소를 입력합니다. 인식가능한 주소는 크게 3가지가 있습니다.\n"
-				+ "  1) wasabisyrup과 같은 아카이브 주소: 입력한 1편만 다운로드 합니다.\n"
+				+ "  -- wasabisyrup과 같은 아카이브 주소: 입력한 1편만 다운로드 합니다.\n"
 				+ "     ex) http://wasabisyrup.com/archives/807EZuSyjwA\n"
-				+ "  2) mangaup 등이 포함된 만화 업데이트 주소: 해당 페이지에 있는 모든 아카이브 주소를 찾아 다운로드합니다.\n"
+				+ "  -- mangaup 등이 포함된 만화 업데이트 주소: 해당 페이지에 있는 모든 아카이브 주소를 찾아 다운로드합니다.\n"
 				+ "     ex) http://marumaru.in/b/mangaup/204237\n"
-				+ "  3) 전편 보러가기 주소: 해당 페이지에 있는 모든 아카이브 주소를 찾아 다운로드 합니다.\n"
+				+ "  -- 전편 보러가기 주소: 해당 페이지에 있는 모든 아카이브 주소를 찾아 다운로드 합니다.\n"
 				+ "     ex) http://marumaru.in/b/manga/198822\n"
 				+ "\n2. 선택적 다운로드\n"
 				+ " - 받고 싶은 만화만 골라서 다운로드 합니다.\n"
 				+ " - 주소 입력창에 '전편 보러가기'주소를 입력하면 다운로드 가능한 목록이 출력됩니다.\n"
 				+ " - 이후 다운받을 페이지들을 정규식 형태로 입력하여 선택적 다운로드를 진행합니다.\n"
 				+ " - 사용가능한 정규식은 다음과 같습니다.\n"
-				+ "  1) 페이지 번호는 1번부터 시작합니다.\n"
-				+ "  2) 각 만화의 번호 구분은 , 으로 합니다.\n"
-				+ "     ex) 0, 3, 1, 7\n"
-				+ "  3) 여러편을 이어서 받고 싶으면 각 회차 사이에 ~ 나 - 를 입력합니다.\n"
+				+ "  -- 페이지 번호는 1번부터 시작합니다.\n"
+				+ "  -- 각 만화의 번호 구분은 , 으로 합니다.\n"
+				+ "     ex) 5, 3, 1, 7\n"
+				+ "  -- 여러편을 이어서 받고 싶으면 각 회차 사이에 ~ 나 - 를 입력합니다.\n"
 				+ "     ex) 4 ~ 10, 9-1\n"
-				+ "  4) 각 번호 사이에 띄어쓰기는 해도 되고 안해도 됩니다.\n"
-				+ "     ex) 0, 1, 2 나 0,1,  2  나 전부 같습니다.\n"
-				+ "  5) 페이지 번호 입력 순서도 딱히 상관 없습니다(알아서 자동 오름차순 정렬이 됩니다.)\n"
-				+ "     ex) 17 ~ 15, 0-3 과 같이 입력하면 0,1,2,3,15,16,17로 최종 변환이 됩니다.\n"
-				+ "  6) 중복된 페이지는 알아서 제거됩니다.\n"
-				+ "     ex) 0, 3, 3, 2~4와 같은 경우 최종적으로 0,2,3,4로 변환이 됩니다.\n"
-				+ "  7) 잘못된 페이지 번호는 걸러낸 뒤 다운로드 할 수 있는 최대한 다운로드를 시도합니다.\n"
+				+ "  -- 각 번호 사이에 띄어쓰기는 해도 되고 안해도 됩니다.\n"
+				+ "     ex) 1, 2, 3 이나 1,  2,3  이나 전부 같습니다.\n"
+				+ "  -- 페이지 번호 입력 순서도 딱히 상관 없습니다(알아서 자동 오름차순 정렬이 됩니다.)\n"
+				+ "     ex) 17 ~ 15, 1-3 과 같이 입력하면 1,2,3,15,16,17로 최종 변환이 됩니다.\n"
+				+ "  -- 중복된 페이지는 알아서 제거됩니다.\n"
+				+ "     ex) 1, 3, 3, 2~4와 같은 경우 최종적으로 1,2,3,4로 변환이 됩니다.\n"
+				+ "  -- 잘못된 페이지 번호는 걸러낸 뒤 다운로드 할 수 있는 최대한 다운로드를 시도합니다.\n"
 				+ "     ex) 5번까지만 있는 만화에서, 4~6을 입력시 4~5까지만 다운로드.\n"
 				+ "         단, 6,8 처럼 아예 정상 페이지가 하나도 없을시엔 다운로드 안함\n"
 				+ "\n3. 다운로드 폴더 열기\n"
 				+ " - 기본적으로 GUI가 지원되야 합니다. 만일 폴더가 없더라도 자동으로 생성되고 열리게 됩니다.\n"
-				+ "  1) Windows의 경우 C:\\Users\\사용자\\Marumaru\\ 폴더가 열립니다.\n"
-				+ "  2) Mac과 Linux의 경우 home/사용자/marumaru/ 폴더가 열립니다.\n"
+				+ "  -- Windows의 경우 C:\\Users\\사용자\\Marumaru\\ 폴더가 열립니다.\n"
+				+ "  -- Mac과 Linux의 경우 home/사용자/marumaru/ 폴더가 열립니다.\n"
 				+ "\n4. 마루마루 접속\n"
 				+ " - 기본적으로 GUI가 지원되어야 합니다. 사용자 PC의 기본 브라우저를 이용하여 마루마루 페이지에 접속합니다.\n"
 				+ "\n8. 설정\n"
@@ -308,11 +304,11 @@ public class SystemInfo {
 				+ "   - 다운로드를 선택하면 사용자의 OS를 바탕으로 Windows / 그 외(Mac, Linux) 버전을 자동 선택하여 다운로드합니다.\n"
 				+ "   - 다운로드 경로는 만화 다운로드 경로(Marumaru 폴더)와 동일합니다\n"
 				+ "  2) 저장경로 변경\n"
-				+ "   - 입력한 경로로 저장 경로를 변경합니다. 잘못된 경로 입력 시 기본 경로로 설정됩니다.\n"
+				+ "   - 입력한 경로로 저장 경로를 변경합니다. 잘못된 경로 입력 시 기존 경로를 유지합니다.\n"
 				+ "   - 단, 만화가 저장되는 경로만 변경되는 것이며, 로그 폴더, 업데이트 다운로드 폴더 등은 기존 기본 경로로 유지됩니다.\n"
 				+ "\n0. 종료\n"
 				+ " - 모든 작업을 중단하고 프로그램을 종료합니다.\n"
-				+ "\n작성자: occidere\t작성일: 2017.06.25\n\n";
+				+ "\n작성자: occidere\t작성일: 2017.06.26\n\n";
 		System.out.println(message);
 	}
 	
@@ -330,20 +326,20 @@ public class SystemInfo {
 			//로그파일 제목 예: 2017-04-28_17-17-24_원피스_17화_003.txt
 			String logfile = String.format("%s_%s.txt", time, name).replace(" ", "_");
 			
-			printError("[Error] "+logfile, false);
+			printError(logfile, false);
 			
 			makeDir(ERROR_LOG_PATH); //로그파일 저장 경로 없을 시를 대비해 만듦
 			
 			/* 로그 저장 (이어쓰기) */
-			PrintWriter pw = new PrintWriter(new FileWriter(ERROR_LOG_PATH + "/" + logfile, true));
-			pw.write(logfile + lineSeperator);
-			pw.write(message + lineSeperator);
+			PrintWriter pw = new PrintWriter(new FileWriter(ERROR_LOG_PATH + fileSeparator + logfile, true));
+			pw.write(logfile + lineSeparator);
+			pw.write(message + lineSeparator);
 			e.printStackTrace(pw);
-			pw.write(lineSeperator);
+			pw.write(lineSeparator);
 			pw.close();
 			
 		} catch (Exception ex) {
-			printError("[Error] 로그 저장 실패", false);
+			printError("로그 저장 실패", false);
 			ex.printStackTrace();
 		}
 	}
@@ -354,7 +350,7 @@ public class SystemInfo {
 	 * @param exitProgram (0: 종료하지 않음, 1: 프로그램 종료)
 	 */
 	public static void printError(String msg, boolean exitProgram){
-		System.err.println(msg);
+		System.err.println("[Error] "+msg);
 		if(exitProgram) System.exit(1);
 	}
 	

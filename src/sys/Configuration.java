@@ -12,12 +12,14 @@ import java.io.OutputStreamWriter;
 import java.util.LinkedList;
 import java.util.List;
 
-class Configuration {
-	private static final String lineSeparator = System.getProperty("line.separator"); //윈도우는 \r\n, 유닉스 계열은 \n, 맥은 \r
-	private static final String fileSeparator = File.separator; //윈도우는 \, 나머지는 /
-	
-	private static final String CONF_PATH = SystemInfo.DEFAULT_PATH + fileSeparator + "MMDownloader.conf";
-	public static String PATH = SystemInfo.DEFAULT_PATH;
+/**
+ * 환경설정을 담당하는 클래스
+ * @author occidere
+ *
+ */
+public class Configuration {
+	//환경설정 파일 위치: Marumaru/MMDownloader.conf로 고정
+	private static final String CONF_PATH = SystemInfo.DEFAULT_PATH + SystemInfo.fileSeparator + "MMDownloader.conf";
 	
 	/**
 	 * path에 있는 파일을 읽어서 라인별로 쪼개 String[] 으로 반환
@@ -36,6 +38,7 @@ class Configuration {
 		BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 		String line;
 		while((line = in.readLine())!=null){
+			line = removeBOM(line); //BOM 문자 제거
 			confList.add(line);
 		}
 		in.close();
@@ -62,12 +65,13 @@ class Configuration {
 	 */
 	public static boolean changePath(String newPath){
 		File file = new File(newPath);
+		//존재하지도 않으면서 생성도 실패하면 잘못된 디렉토리
 		if(file.exists() == false && file.mkdirs() == false){
-			SystemInfo.printError(String.format("[Error] %s는 올바른 디렉토리가 아닙니다.\n", newPath), false);
+			SystemInfo.printError(String.format("%s는 올바른 디렉토리가 아닙니다.", newPath), false);
 			return false;
 		}
-		boolean res = writeConf("path", newPath);
-		if(res) PATH = newPath;
+		boolean res = writeConf("PATH", newPath);
+		if(res) SystemInfo.PATH = newPath + SystemInfo.fileSeparator;;
 		return res;
 	}
 	
@@ -97,10 +101,12 @@ class Configuration {
 			trimmedConfLine = confLine.replaceAll(" ", "");
 			if(isComment(trimmedConfLine)==false && isCorrectFormat(trimmedConfLine)){
 				nameValue = trimmedConfLine.split("=");//nameValue[0] = name, nameValue[1] = value
-				
 				/* 설정값 적용 부분 */
-				if(nameValue[0].equals("PATH")) PATH = nameValue[1]; //PATH 설정 적용
+				if(nameValue[0].equals("PATH")){
+					SystemInfo.PATH = nameValue[1] + SystemInfo.fileSeparator; //PATH 설정 적용
+				}
 				else; //추가적인 설정 적용
+				
 				
 			}
 		}
@@ -147,12 +153,12 @@ class Configuration {
 			if(isWrote){ //기존 설정부분 찾아 바꾼 경우면 배열 내용(설정파일 내용) 통째로 덮어쓰기
 				out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, false)));
 				for(String line : confArr){
-					out.write(line+lineSeparator);
+					out.write(line+SystemInfo.lineSeparator);
 				}
 			}
 			else{ //기존 설정부분이 없는 경우(못찾은 경우) 맨 아래에 이어쓰기
 				out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
-				out.write(newConfLine+lineSeparator);
+				out.write(newConfLine+SystemInfo.lineSeparator);
 			}
 			out.close();
 		} catch (IOException e) {
@@ -187,5 +193,17 @@ class Configuration {
 		String trimmedConfLine = confLine.replaceAll(" ", "");
 		String conf[] = trimmedConfLine.split("=");
 		return conf.length==2;
+	}
+	
+	/**
+	 * UTF-8 사용 시, 일부 텍스트 에디터에선 문서 제일 처음에 BOM(Byte Order Mark)을 붙인다. ex) 메모장</br>
+	 * 이를 걸러서 순수 스트링만 리턴하기 위한 메서드
+	 * @param str BOM이 포함되어 있는지 검사할 스트링
+	 * @return BOM이 있다면 제거한 스트링
+	 */
+	private static String removeBOM(String str){
+		char BOM = (char)65279;
+		if(str.charAt(0) == BOM) str = str.substring(1);
+		return str;
 	}
 }

@@ -144,7 +144,7 @@ public class Preprocess {
 		Set<Integer> tmpPages = new HashSet<>();
 		List<Integer> pages = null;
 		
-		int i, j, start, end, splittedLen = splitted.length, tmp, tmpPagesLen;
+		int i, j, start, end, splittedLen = splitted.length, tmp, tmpPagesLen, pageNum;
 
 		try{
 			for(i = 0; i < splittedLen; i++){
@@ -152,8 +152,10 @@ public class Preprocess {
 				strPages = splitted[i].split(String.format("%s|%s", delim[0], delim[1]));
 				
 				//스트링 페이지 배열 길이가 1이면, 숫자 1개라는 의미
-				if(1 == strPages.length) 
-					tmpPages.add(Integer.parseInt(strPages[0]));
+				if(1 == strPages.length){
+					pageNum = Integer.parseInt(strPages[0]);
+					if(isCorrectPage(1, maxPage, pageNum)) tmpPages.add(pageNum);
+				}
 				//아니라면 s = 시작페이지, e = 끝페이지 까지 순차 저장.
 				else{ 
 					start = Integer.parseInt(strPages[0]);
@@ -166,7 +168,9 @@ public class Preprocess {
 						end = tmp;
 					}
 
-					for(j = start; j <= end; j++) tmpPages.add(j);
+					for(j = start; j <= end; j++){
+						if(isCorrectPage(1, maxPage, j)) tmpPages.add(j);
+					}
 				}
 			}
 			
@@ -179,7 +183,8 @@ public class Preprocess {
 			Iterator<Integer> it = tmpPages.iterator();
 			while(it.hasNext()){
 				tmp = it.next();
-				if(tmp<=maxPage) pages.add(tmp - 1); // 인덱스 번호를 1번부터 입력받도록 했으므로, -1 필수
+				// 인덱스 번호를 1번부터 입력받도록 했으므로, -1 필수
+				if(tmp<=maxPage)  pages.add(tmp - 1);
 			}
 			
 			//오름차순 페이지 정렬
@@ -196,6 +201,18 @@ public class Preprocess {
 			e.printStackTrace();
 		}
 		return pages;
+	}
+	
+	/**
+	 * <b>선택적 다운로드에서 페이지 분할할 때 각 페이지가 정상 범위에 있는 페이지인지 판별하는 메서드</b></br>
+	 * min <= 페이지 <= max 범위에 있어야 정상 페이지.
+	 * @param min 최소 페이지
+	 * @param max 최대 페이지
+	 * @param pageNum 검증할 현재 페이지 번호
+	 * @return 정상 페이지이면 true, 아니면 false
+	 */
+	private boolean isCorrectPage(int min, int max, int pageNum){
+		return min<=pageNum && pageNum<=max;
 	}
 	
 	public void close(){
