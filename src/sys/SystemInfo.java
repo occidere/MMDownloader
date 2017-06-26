@@ -312,7 +312,7 @@ public class SystemInfo {
 			//로그파일 제목 예: 2017-04-28_17-17-24_원피스_17화_003.txt
 			String logfile = String.format("%s_%s.txt", time, name).replace(" ", "_");
 			
-			printError("에러 발생! "+logfile, false);
+			printError("[Error] "+logfile, false);
 			
 			makeDir(ERROR_LOG_PATH); //로그파일 저장 경로 없을 시를 대비해 만듦
 			
@@ -325,7 +325,7 @@ public class SystemInfo {
 			pw.close();
 			
 		} catch (Exception ex) {
-			System.err.println("로그 저장 실패!");
+			printError("[Error] 로그 저장 실패", false);
 			ex.printStackTrace();
 		}
 	}
@@ -337,7 +337,7 @@ public class SystemInfo {
 	 */
 	public static void printError(String msg, boolean exitProgram){
 		System.err.println(msg);
-		if(exitProgram) System.exit(0);
+		if(exitProgram) System.exit(1);
 	}
 	
 	/**
