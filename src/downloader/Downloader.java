@@ -209,9 +209,10 @@ public class Downloader {
 			}
 		}
 		catch (Exception e) {
+			System.err.println("실패");
 			SystemInfo.saveErrLog("Jsoup Parsing Fail", eachArchiveAddress, e); //페이지 파싱 실패하면 에러 로그 저장
 		}
-		
+		System.out.println("성공");
 		return pageSource; //성공하면 html코드, 실패하면 null 리턴
 	}
 	
@@ -241,12 +242,13 @@ public class Downloader {
 			pageSource = page.asXml();
 		}
 		catch(Exception e){
+			System.err.println("실패");
 			SystemInfo.saveErrLog("HtmlUnit Parsing Fail", eachArchiveAddress, e); //페이지 파싱 실패하면 에러 로그 저장
 		}
 		finally{
 			webClient.close();
 		}
-		
+		System.out.println("성공");
 		return pageSource;
 	}
 
