@@ -56,7 +56,7 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.4.2.7"; //프로그램 버전
+	private static final String VERSION = "0.4.2.8"; //프로그램 버전
 	private static final String UPDATED_DATE = "2017.09.07"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
@@ -162,9 +162,9 @@ public class SystemInfo {
 					}
 					
 					System.out.println("다운로드중 ...");
-					System.out.println("저장 위치: "+DEFAULT_PATH+fileName);
+					System.out.println("저장 위치: "+DEFAULT_PATH+fileSeparator+fileName);
 					
-					fos = new FileOutputStream(DEFAULT_PATH+fileName);
+					fos = new FileOutputStream(DEFAULT_PATH+fileSeparator+fileName);
 					conn = (HttpURLConnection)new URL(fileURL).openConnection();
 					conn.setConnectTimeout(300000);
 					is = conn.getInputStream();
