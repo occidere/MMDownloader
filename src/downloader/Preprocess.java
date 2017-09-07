@@ -14,7 +14,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import downloader.Downloader;
-import sys.SystemInfo;
+import common.DownloadMod;
+import common.ErrorHandling;
 
 public class Preprocess {
 	
@@ -34,17 +35,19 @@ public class Preprocess {
 	/**
 	 * UI에서 주소를 스트링으로 입력받아 아카이브 리스트를 만들어주는 메서드
 	 * @param rawAddress 만화 주소
-	 * @param downloadMode 다운로드 모드. (0: 전체 다운, 1: 선택적 다운)
+	 * @param downloadMode 다운로드 모드
+	 * @param in BufferedReader 객체
 	 */
 	public void connector(String rawAddress, int downloadMode, BufferedReader in) {
 		//아카이브 주소가 담긴 리스트.
 		List<Comic> archiveAddrList = getArchiveAddrList(rawAddress);
 		
 		switch(downloadMode){
-		case 0: //전체 다운로드 기능
+		case DownloadMod.ALL_DOWNLOAD: //전체 다운로드 기능
 			downloader.download(archiveAddrList);
 			break;
-		case 1: //선택적 다운로드 기능
+		
+		case DownloadMod.SELETIVE_DOWNLOAD: //선택적 다운로드 기능
 			showList(archiveAddrList); //다운 가능한 페이지 출력
 			System.out.print("다운받을 번호를 입력하세요: ");
 			
@@ -58,7 +61,7 @@ public class Preprocess {
 				downloader.selectiveDownload(archiveAddrList, pages);
 			}
 			catch(Exception e){
-				e.printStackTrace();
+				ErrorHandling.saveErrLog("다운로드 시도 실패", "", e);
 			}
 			break;
 		}
@@ -111,7 +114,7 @@ public class Preprocess {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			ErrorHandling.saveErrLog("Jsoup 파싱 실패", "", e);
 		}
 		return archiveAddrList;
 	}
@@ -123,8 +126,9 @@ public class Preprocess {
 	 */
 	private void showList(List<Comic> archiveAddrList){
 		int idx = 1;
-		for(Comic comic : archiveAddrList)
+		for(Comic comic : archiveAddrList) {
 			System.out.println(String.format("%3d. %s", idx++, comic.getTitle()));
+		}
 	}
 	
 	/**
@@ -133,7 +137,6 @@ public class Preprocess {
 	 * @return 페이지 번호를 담은 리스트
 	 */
 	private List<Integer> parse(String command, int maxPage){
-		
 		String spliter = ","; //최우선 구분자
 		String delim[] = { "~", "-" }; //페이지 간 구분자
 		
@@ -169,7 +172,8 @@ public class Preprocess {
 					}
 
 					for(j = start; j <= end; j++){
-						if(isCorrectPage(1, maxPage, j)) tmpPages.add(j);
+						if(isCorrectPage(1, maxPage, j))
+							tmpPages.add(j);
 					}
 				}
 			}
@@ -195,10 +199,10 @@ public class Preprocess {
 		}
 		catch(IndexOutOfBoundsException iobe){
 			//어지간한 페이지 에러는 다 여기서 잡힌다.
-			SystemInfo.printError("유효한 페이지를 입력해주세요.", false);
+			ErrorHandling.printError("유효한 페이지를 입력해주세요.", false);
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			ErrorHandling.saveErrLog("정규식 파싱 실패", "", e);
 		}
 		return pages;
 	}

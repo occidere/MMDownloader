@@ -6,7 +6,10 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
+import common.ErrorHandling;
+import sys.Configuration;
 import sys.SystemInfo;
+import util.ImageMerge;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -26,10 +29,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class Downloader {
-	
-	private Downloader(){
-		//title = titleNo = "";
-	}
+	private Downloader(){}
 	
 	//싱글톤 패턴
 	private static Downloader instance = null;
@@ -39,7 +39,6 @@ public class Downloader {
 	}
 	
 	//만화 제목 = 폴더 이름
-//	private String title, titleNo; //title=원피스, titleNo=337화
 	private final String PASSWORD = "qndxkr"; //만화 비밀번호
 	private final String DOMAIN = "http://wasabisyrup.com";
 	
@@ -48,22 +47,11 @@ public class Downloader {
 	
 	private final byte[] BUF = new byte[1048576]; //다운로드용 1MB 버퍼
 	
-	/* 2017.05.07 기준 아카이브명을 처음부터 최신으로 설정하는 방식을 사용하여 현재는 필요없음.
-	 * 2017.04.23 기준 필요 ex) 무직선생 2, 3화의 경우
-	 * 중요! 아카이브명이 옛날 주소 그대로면 HttpURLConnection을 이용한 다운로드시 
-	 * 제대로 다운로드가 안됨 -> 항상 최신 아카이브명으로 집어넣어줘야 됨
-	 */
-//	private final String OLD_ARCHIVES_NAME[] = { "shencomics", "yuncomics" }; //옛날 아카이브명
-//	private final String NEW_ARCHIVES_NAME = "wasabisyrup"; //현재 아카이브명
-//	private final String BLOG = "blog"; //가끔 blog.yuncomics.com과 같은 형식이 있기에 찾아서 www로 바꿔줘야 됨
-	
-	/* 다운로드에 직접적으로 사용되는 객체들.
-	 * 지역변수로 선언시 매번 객체생성 & 제거가 불필요하게 많이 발생하여 아예 전역변수로 빼버림.
-	 */
+	/* 다운로드에 직접적으로 사용되는 객체들. */
+	/* 지역변수로 선언시 매번 객체생성 & 제거가 불필요하게 많이 발생하여 아예 전역변수로 빼버림 */
 	private FileOutputStream fos;
 	private HttpURLConnection conn;
 	private InputStream inputStream;
-
 	
 	/**
 	 * 선택된 페이지들만 다운로드
@@ -81,10 +69,9 @@ public class Downloader {
 			//선택된 페이지들로 구성된 리스트들만 다운로드 시도
 			download(selectedArchiveAddress);
 		}
-		catch(IndexOutOfBoundsException iobe){
+		catch(Exception e){
 			//어지간한 페이지 에러는 다 여기서 잡힌다.
-			SystemInfo.printError("유효한 페이지를 입력해주세요.", false);
-			iobe.printStackTrace();
+			ErrorHandling.saveErrLog("선택적 다운로드 실패", "", e);
 		}
 	}
 	
@@ -96,8 +83,8 @@ public class Downloader {
 		//아카이브 리스트에 담긴 개수 출력
 		System.out.printf("총 %d개\n", archiveAddress.size());
 		
-		List<String> imgList;
-		String title, titleNo; //원피스, 3화
+		List<String> imgList = null;
+		String path = "", title = "", titleNo = ""; //원피스, 3화
 		int pageNum, numberOfPages, len, imageSize; //이미지 크기
 		
 		//http://www.shencomics.com/archives/533456와 같은 아카이브 주소
@@ -118,7 +105,7 @@ public class Downloader {
 			
 			//저장경로 = "기본경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\" 또는,
 			//저장경로 = "사용자 설정 경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\"
-			String path = String.format("%s/%s/%s %s/", SystemInfo.PATH, title, title, titleNo);
+			path = String.format("%s/%s/%s %s/", SystemInfo.PATH, title, title, titleNo);
 			
 			pageNum = 0;
 			numberOfPages = imgList.size();
@@ -144,7 +131,7 @@ public class Downloader {
 					conn.setRequestProperty("User-Agent", USER_AGENT);
 					conn.setRequestProperty("charset", "utf-8");
 					
-					imageSize = conn.getContentLength()>>>10; // KB
+					imageSize = conn.getContentLength() >>> 10; // KB
 
 					inputStream = conn.getInputStream(); //속도저하의 원인
 					
@@ -156,9 +143,22 @@ public class Downloader {
 				}
 				catch (Exception e) {
 					//다운로드 중 에러 발생시 에러 로그를 txt형태로 저장
-					SystemInfo.saveErrLog(String.format("%s_%s_%03d", title, titleNo, pageNum), "", e);
+					ErrorHandling.saveErrLog(String.format("%s_%s_%03d", title, titleNo, pageNum), "", e);
 				}
+				
 			}
+		}
+		
+		/* 다운받은 만화들을 하나로 합치는 property 값이 true면 합침(기본: false) */
+		try {
+			Configuration.refresh();
+			if(Configuration.getBoolean("MERGE", false)) {
+				ImageMerge im = new ImageMerge(path);
+				im.mergeAll(title+" "+titleNo);
+			}
+		}
+		catch(Exception e) {
+			ErrorHandling.saveErrLog("이미지 병합 실패", "", e);
 		}
 	}
 
@@ -181,7 +181,7 @@ public class Downloader {
 		
 		//Jsoup과 HtmlUnit 모두 파싱 실패시 에러메세지 출력
 		if(pageSource == null){
-			SystemInfo.printError("페이지 파싱 실패!", false);
+			ErrorHandling.printError("페이지 파싱 실패!", false);
 		}
 		
 		return pageSource; //아카이브 페이지를 파싱한 결과 리턴
@@ -209,9 +209,9 @@ public class Downloader {
 			}
 		}
 		catch (Exception e) {
-			System.err.println("실패");
-			SystemInfo.saveErrLog("Jsoup Parsing Fail", eachArchiveAddress, e); //페이지 파싱 실패하면 에러 로그 저장
+			ErrorHandling.saveErrLog("Jsoup 파싱 실패", eachArchiveAddress, e); //페이지 파싱 실패하면 에러 로그 저장
 		}
+		
 		System.out.println("성공");
 		return pageSource; //성공하면 html코드, 실패하면 null 리턴
 	}
@@ -228,7 +228,7 @@ public class Downloader {
 		
 		//pageSource = Html코드를 포함한 페이지 소스코드가 담길 스트링, domain = http://wasabisyrup.com <-마지막 / 안붙음!
 		String pageSource = null;
-		System.out.println("일반 연결 시도중 ...");
+		System.out.print("일반 연결 시도중 ... ");
 		
 		WebClient webClient = new WebClient();
 		webClient.getOptions().setRedirectEnabled(true);
@@ -242,8 +242,7 @@ public class Downloader {
 			pageSource = page.asXml();
 		}
 		catch(Exception e){
-			System.err.println("실패");
-			SystemInfo.saveErrLog("HtmlUnit Parsing Fail", eachArchiveAddress, e); //페이지 파싱 실패하면 에러 로그 저장
+			ErrorHandling.saveErrLog("HtmlUnit 파싱 실패", eachArchiveAddress, e); //페이지 파싱 실패하면 에러 로그 저장
 		}
 		finally{
 			webClient.close();
@@ -344,7 +343,7 @@ public class Downloader {
 				}
 				catch (Exception e) {
 					utf8 = new StringBuilder(url);
-					e.printStackTrace();
+					ErrorHandling.saveErrLog("UTF-8 변환 실패", "", e);
 				}
 			}
 			else utf8.append((char)code);

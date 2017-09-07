@@ -26,6 +26,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Document;
 
+import common.ErrorHandling;
+
 /**
  * <p>시스템과 관련된 클래스
  * <p>폴더생성, 브라우저 오픈등의 기능이 static으로 내장
@@ -54,8 +56,8 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.3.1.0"; //프로그램 버전
-	private static final String UPDATED_DATE = "2017.06.26"; //업데이트 날짜
+	private static final String VERSION = "0.4.2.7"; //프로그램 버전
+	private static final String UPDATED_DATE = "2017.09.07"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
@@ -71,9 +73,12 @@ public class SystemInfo {
 	 * <p>프로그램 첫 시작시 보여줄 정보.
 	 */
 	public static void printProgramInfo(){
+		try { Configuration.refresh(); }
+		catch (Exception e) {}
 		System.out.print(DEVELOPER+"\t");
 		System.out.println(VERSION_INFO);
-		System.out.println("저장경로: "+PATH);
+		System.out.println("저장경로: "+Configuration.getString("PATH", DEFAULT_PATH));
+		System.out.println("이미지 병합: "+Configuration.getBoolean("MERGE", false));
 	}
 
 	/**
@@ -96,7 +101,7 @@ public class SystemInfo {
 			}
 			catch(Exception e){
 				LATEST_VERSION = LATEST_UPDATED_DATE = "연결실패";
-				e.printStackTrace();
+				ErrorHandling.saveErrLog("업데이트 서버 연결 실패", "", e);
 			}
 			finally{
 				LATEST_VERSION_INFO = String.format("최신버전: %s (%s)", LATEST_VERSION, LATEST_UPDATED_DATE);
@@ -113,6 +118,7 @@ public class SystemInfo {
 			
 			if(curVersion < latestVersion) downloadLatestVersion(in);
 			else if(curVersion == latestVersion) System.out.println("현재 최신버전입니다!");
+			else System.out.println("버전이 이상합니다! ᕙ(•̀‸•́‶)ᕗ");
 		}
 	}
 	
@@ -138,26 +144,24 @@ public class SystemInfo {
 			
 			while(!isCorrectlySelected){ //다운로드 받거나(y) 취소(n)를 제대로 선택할 때 까지 반복.
 				System.out.printf("최신 버전(%s)을 다운받으시겠습니까? (Y/n): ", LATEST_VERSION);
-				
 				select = in.readLine();
 				
 				if(select.equalsIgnoreCase("y")){
 					isCorrectlySelected = true;
-					
 					makeDir(); //Marumaru폴더 생성
 					
-					//OS가 윈도우면, 파일 이름 = MMdownloader_0.2.9_Windows.zip
+					/* OS가 윈도우면, 파일 이름 = MMdownloader_0.2.9_Windows.zip */
 					if(OS_NAME.contains("Windows")){
 						fileName = LATEST_WINDOWS.substring(LATEST_WINDOWS.lastIndexOf("/")+1);
 						fileURL = LATEST_WINDOWS;
 					}
-					//OS가 윈도우 이외면 파일 이름 = MMdownloader_0.2.9_Mac,Linux.zip
+					/* OS가 윈도우 이외면 파일 이름 = MMdownloader_0.2.9_Mac,Linux.zip */
 					else{
 						fileName = LATEST_OTHERS.substring(LATEST_OTHERS.lastIndexOf("/")+1);
 						fileURL = LATEST_OTHERS;
 					}
 					
-					System.out.println("다운로드중...");
+					System.out.println("다운로드중 ...");
 					System.out.println("저장 위치: "+DEFAULT_PATH+fileName);
 					
 					fos = new FileOutputStream(DEFAULT_PATH+fileName);
@@ -169,7 +173,7 @@ public class SystemInfo {
 					
 					while((len = is.read(buf)) != -1){
 						fos.write(buf, 0, len);
-						accumSize+=(double)len/MB;
+						accumSize += (double)len / MB;
 						
 						if(preDownloadedMB < (int)accumSize){ //MB단위로만 로그 출력
 							System.out.printf("%5.2fMB / %5.2fMB ... 완료!\n", accumSize, totalSize);
@@ -181,7 +185,7 @@ public class SystemInfo {
 					
 					//마지막 로그 출력
 					System.out.printf("%5.2fMB / %5.2fMB ... 완료!\n", accumSize, totalSize);
-					System.out.println("최신버전 다운로드 완료!");
+					System.out.println("최신버전 다운로드 완료! (위치: "+SystemInfo.DEFAULT_PATH+")");
 				}
 				else if(select.equalsIgnoreCase("n")){
 					isCorrectlySelected = true;
@@ -190,8 +194,7 @@ public class SystemInfo {
 			}
 		}
 		catch(Exception e){
-			System.err.println("업데이트 에러!");
-			e.printStackTrace();
+			ErrorHandling.saveErrLog("최신버전 다운로드 에러", "", e);
 		}
 	}
 	
@@ -214,7 +217,7 @@ public class SystemInfo {
 			Desktop.getDesktop().browse(new URI(uri));
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			ErrorHandling.saveErrLog(uri+" 브라우저 접속 실패", "", e);
 		}
 	}
 	
@@ -237,7 +240,7 @@ public class SystemInfo {
 			Desktop.getDesktop().open(new File(path));
 		} 
 		catch(Exception e){
-			e.printStackTrace();
+			ErrorHandling.saveErrLog("폴더 오픈 실패", "", e);
 		}
 	}
 	
@@ -262,7 +265,7 @@ public class SystemInfo {
 	 * <p>도움말 출력 메서드
 	 */
 	public static void help(){
-		final String message = 
+		final String MESSAGE = 
 				"## 도움말 ##\n"
 				+ "1. 만화 다운로드\n"
 				+ " - 다운받을 만화 주소를 입력합니다. 인식가능한 주소는 크게 3가지가 있습니다.\n"
@@ -306,52 +309,15 @@ public class SystemInfo {
 				+ "  2) 저장경로 변경\n"
 				+ "   - 입력한 경로로 저장 경로를 변경합니다. 잘못된 경로 입력 시 기존 경로를 유지합니다.\n"
 				+ "   - 단, 만화가 저장되는 경로만 변경되는 것이며, 로그 폴더, 업데이트 다운로드 폴더 등은 기존 기본 경로로 유지됩니다.\n"
+				+ "   - 기본값: C\\Users\\사용자\\Marumaru 또는 /home/사용자/Marumaru\n"
+				+ "  3) 이미지 병합\n"
+				+ "   - 다운받은 만화 폴더에 이미지들을 세로로 이어붙인 긴 이미지를 추가로 생성합니다.\n"
+				+ "     기존의 좌, 우로 넘겨보던 방식 대신, 하나의 긴 이미지를 확대하여 스크롤 해서 볼 수 있습니다.\n"
+				+ "   - 기본값: false\n"
 				+ "\n0. 종료\n"
 				+ " - 모든 작업을 중단하고 프로그램을 종료합니다.\n"
-				+ "\n작성자: occidere\t작성일: 2017.06.26\n\n";
-		System.out.println(message);
-	}
-	
-	/**
-	 * 다운로드 도중 에러 발생시 로그로 남김
-	 * 로그파일 제목 예: 2017-04-28_17-17-24_원피스_17화_003.txt
-	 * @param name 에러 발생한 만화제목(제목+회차)
-	 * @param e 예외 발생 객체
-	 */
-	public static void saveErrLog(String name, String message, Exception e) {
-		try {
-			//에러 발생 시간정보. 연-월-일_시-분-초
-			String time = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
-			
-			//로그파일 제목 예: 2017-04-28_17-17-24_원피스_17화_003.txt
-			String logfile = String.format("%s_%s.txt", time, name).replace(" ", "_");
-			
-			printError(logfile, false);
-			
-			makeDir(ERROR_LOG_PATH); //로그파일 저장 경로 없을 시를 대비해 만듦
-			
-			/* 로그 저장 (이어쓰기) */
-			PrintWriter pw = new PrintWriter(new FileWriter(ERROR_LOG_PATH + fileSeparator + logfile, true));
-			pw.write(logfile + lineSeparator);
-			pw.write(message + lineSeparator);
-			e.printStackTrace(pw);
-			pw.write(lineSeparator);
-			pw.close();
-			
-		} catch (Exception ex) {
-			printError("로그 저장 실패", false);
-			ex.printStackTrace();
-		}
-	}
-	
-	/**
-	 * 에러 출력 메서드.
-	 * @param msg 출력할 에러 내용
-	 * @param exitProgram (0: 종료하지 않음, 1: 프로그램 종료)
-	 */
-	public static void printError(String msg, boolean exitProgram){
-		System.err.println("[Error] "+msg);
-		if(exitProgram) System.exit(1);
+				+ "\n작성자: occidere\t작성일: 2017.09.07\n\n";
+		System.out.println(MESSAGE);
 	}
 	
 	/**
