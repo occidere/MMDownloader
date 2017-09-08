@@ -17,7 +17,7 @@ import downloader.Downloader;
 import common.DownloadMod;
 import common.ErrorHandling;
 
-public class Preprocess {
+public class Preprocess implements DownloadMod {
 	
 	/* 싱글톤 패턴 */
 	private Preprocess(){
@@ -43,11 +43,11 @@ public class Preprocess {
 		List<Comic> archiveAddrList = getArchiveAddrList(rawAddress);
 		
 		switch(downloadMode){
-		case DownloadMod.ALL_DOWNLOAD: //전체 다운로드 기능
+		case ALL_DOWNLOAD: //전체 다운로드 기능
 			downloader.download(archiveAddrList);
 			break;
 		
-		case DownloadMod.SELETIVE_DOWNLOAD: //선택적 다운로드 기능
+		case SELETIVE_DOWNLOAD: //선택적 다운로드 기능
 			showList(archiveAddrList); //다운 가능한 페이지 출력
 			System.out.print("다운받을 번호를 입력하세요: ");
 			

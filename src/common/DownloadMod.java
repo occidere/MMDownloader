@@ -6,9 +6,7 @@ package common;
  * @author occidere
  *
  */
-public class DownloadMod {
-	private DownloadMod() {}
-	
+public interface DownloadMod {
 	public static final int ALL_DOWNLOAD = 10;
 	public static final int SINGLE_DOWNLOAD = 20;
 	public static final int SELETIVE_DOWNLOAD = 30;

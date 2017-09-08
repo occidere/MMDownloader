@@ -10,7 +10,7 @@ import downloader.Preprocess;
 import sys.SystemInfo;
 import sys.Configuration;
 
-public class UI {
+public class UI implements DownloadMod {
 	private final int EXIT = 0;
 	
 	private UI(){
@@ -41,14 +41,14 @@ public class UI {
 			case 1: //일반 다운로드
 				System.out.print("주소를 입력하세요: ");
 				comicAddress = in.readLine().trim();
-				preprocess.connector(comicAddress, DownloadMod.ALL_DOWNLOAD, in);
+				preprocess.connector(comicAddress, ALL_DOWNLOAD, in);
 				preprocess.close();
 				break;
 
 			case 2: //선택적 다운로드
 				System.out.print("전체보기 주소를 입력하세요: ");
 				comicAddress = in.readLine().trim();
-				preprocess.connector(comicAddress, DownloadMod.SELETIVE_DOWNLOAD, in);
+				preprocess.connector(comicAddress, SELETIVE_DOWNLOAD, in);
 				preprocess.close();
 				break;
 				
