@@ -85,7 +85,7 @@ public class Downloader {
 		System.out.printf("총 %d개\n", archiveAddress.size());
 		
 		List<String> imgList = null;
-		String path = "", title = "", titleNo = ""; //원피스, 3화
+		String path = "", subFolder = ""; //subFolder = 원피스 3화
 		int pageNum, numberOfPages, imageSize, len; //이미지 크기
 		long st, elapsed;
 		
@@ -102,12 +102,13 @@ public class Downloader {
 			//아카이브주소에서 파싱한 이미지들의 URL이 담긴 리스트
 			imgList = comic.getImgURL();
 			
-			title = comic.getTitle();
-			titleNo = comic.getTitleNo();
+			subFolder = String.format("%s %s", comic.getTitle(), comic.getTitleNo()).trim();
 			
-			//저장경로 = "기본경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\" 또는,
-			//저장경로 = "사용자 설정 경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\"
-			path = String.format("%s/%s/%s %s/", SystemInfo.PATH, title, title, titleNo);
+			/*
+			 * 저장경로 = "기본경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\" 또는,
+			 * 저장경로 = "사용자 설정 경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\"
+			 */
+			path = String.format("%s/%s/%s/", SystemInfo.PATH, comic.getTitle(), subFolder);
 			
 			pageNum = 0;
 			numberOfPages = imgList.size();
@@ -124,6 +125,7 @@ public class Downloader {
 				try {
 					/* FileOutputStream을 그때그때마다 생성 & 종료하게 하여 빠른 디스크 IO 처리
 					 * 페이지 번호는 001.jpg, 052.jpg, 337.jpg같은 형식 */
+					System.out.println(path);
 					fos = new FileOutputStream(String.format("%s%03d%s", path, ++pageNum, getExt(imgURL)));
 
 					conn = (HttpURLConnection)new URL(imgURL).openConnection();
@@ -153,7 +155,7 @@ public class Downloader {
 				}
 				catch (Exception e) {
 					//다운로드 중 에러 발생시 에러 로그를 txt형태로 저장
-					ErrorHandling.saveErrLog(String.format("%s_%s_%03d", title, titleNo, pageNum), "", e);
+					ErrorHandling.saveErrLog(String.format("%s_%03d", subFolder, pageNum), "", e);
 				}
 				
 			}
@@ -164,7 +166,7 @@ public class Downloader {
 			Configuration.refresh();
 			if(Configuration.getBoolean("MERGE", false)) {
 				ImageMerge im = new ImageMerge(path);
-				im.mergeAll(title+" "+titleNo);
+				im.mergeAll(subFolder);
 			}
 		}
 		catch(Exception e) {
