@@ -29,6 +29,7 @@
 --- ver 0.4.5.0 ---
 * [Beta] byte buf[] 없애고 BufferedInputStream, BufferedOutputStream으로 대체
 * [Beta] Request Header에 Accept-Encoding: gzip 추가
+
 --- ver 0.4.4.3 ---
 * 일부 단편만화 다운로드 시 지정된 경로를 찾을 수 없는 버그 수정
 
