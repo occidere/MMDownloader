@@ -26,6 +26,8 @@ import java.util.logging.Level;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.HttpURLConnection;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
@@ -44,15 +46,15 @@ public class Downloader {
 	private final String DOMAIN = "http://wasabisyrup.com";
 	
 	final int MAX_WAIT_TIME = 60000; //최대 대기시간 1분
-	
-	private int bufSize = 1048576;
-	private byte[] buf = new byte[bufSize]; //다운로드용 1MB 버퍼
+	private final int BUF_SIZE = 1048576;
 	
 	/* 다운로드에 직접적으로 사용되는 객체들. */
 	/* 지역변수로 선언시 매번 객체생성 & 제거가 불필요하게 많이 발생하여 아예 전역변수로 빼버림 */
 	private FileOutputStream fos;
 	private HttpURLConnection conn;
 	private InputStream inputStream;
+	private BufferedInputStream bis; //byte buf 대신 사용
+	private BufferedOutputStream bos; //byte buf 대신 사용
 	
 	/**
 	 * 선택된 페이지들만 다운로드
@@ -133,17 +135,22 @@ public class Downloader {
 					conn.setConnectTimeout(MAX_WAIT_TIME);
 					conn.setRequestProperty("charset", "utf-8");
 					conn.setRequestProperty("User-Agent", UserAgent.getUserAgent());
+					conn.setRequestProperty("Accept-Encoding", "gzip"); //20171126 혹시 몰라서 gzip 추가
 					
 					imageSize = conn.getContentLength(); // byte size
 					inputStream = conn.getInputStream(); //속도저하의 원인
 					
+					//byte buf 대신 사용
+					bis = new BufferedInputStream(inputStream, BUF_SIZE);
+					bos = new BufferedOutputStream(fos);
+					
 					st = System.currentTimeMillis();
-					while((len = inputStream.read(buf))!=-1) fos.write(buf, 0, len);
+					while((len = bis.read())!=-1) bos.write(len);
 					elapsed = (System.currentTimeMillis() - st);
 
-					fos.flush();
-					fos.close();
-					inputStream.close();
+					bos.flush();
+					bos.close();
+					bis.close();
 					
 					System.out.printf("%3d / %3d ...... 완료! (%s)", pageNum, numberOfPages, getStrSpeed(imageSize, elapsed));
 					// DEBUG값이 true이면 다운받은 이미지 용량 & 메모리 정보 출력
@@ -214,6 +221,7 @@ public class Downloader {
 			Response response = Jsoup.connect(eachArchiveAddress)
 					.userAgent(UserAgent.getUserAgent())
 					.header("charset", "utf-8")
+					.header("Accept-Encoding", "gzip") //20171126 gzip 추가
 					.data("pass", PASSWORD)
 					.followRedirects(true)
 					.execute();
@@ -253,6 +261,7 @@ public class Downloader {
 		try{
 			WebRequest req = new WebRequest(new URL(eachArchiveAddress));
 			req.setAdditionalHeader("User-Agent", UserAgent.getUserAgent());
+			req.setAdditionalHeader("Accept-Encoding", "gzip"); //20171126 gzip 추가
 			req.setHttpMethod(HttpMethod.POST);
 			req.getRequestParameters().add(new NameValuePair("pass", PASSWORD)); //비밀번호 post 방식 전송
 			HtmlPage page = webClient.getPage(req);
