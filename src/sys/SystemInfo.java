@@ -56,8 +56,8 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.4.4.3"; //프로그램 버전
-	private static final String UPDATED_DATE = "2017.11.22"; //업데이트 날짜
+	private static final String VERSION = "0.4.5.0"; //프로그램 버전
+	private static final String UPDATED_DATE = "2017.11.26"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
