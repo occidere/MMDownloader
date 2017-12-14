@@ -202,4 +202,5 @@ public class Preprocess implements DownloadMod {
 변경사항:
 DCL 싱글톤
 정규식 파싱 스트림 사용, 각 페이지별로 try...catch 사용하여 최대한 파싱
+getArchiveAddrList에 스트림 적용
 */
