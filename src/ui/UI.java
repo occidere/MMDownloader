@@ -21,15 +21,19 @@ public class UI implements DownloadMod {
 		SystemInfo.printProgramInfo();//버전 출력
 	}
 	
-	/* 싱글톤 */
-	private static UI instance;
+	/* Double Checking Locking Singleton */
+	private static volatile UI instance = null;
 	public static UI getInstance(){
-		if(instance==null) instance = new UI();
+		if(instance == null) {
+			synchronized(UI.class) {
+				if(instance == null) instance = new UI();
+			}
+		}
 		return instance;
 	}
 
 	public void showMenu() throws Exception {
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		Preprocess preprocess = Preprocess.getInstance();
 		String comicAddress;
 		int menuNum = Integer.MAX_VALUE;
@@ -65,7 +69,6 @@ public class UI implements DownloadMod {
 			case 8: //환경설정
 				printSettingMenu();
 				menuNum = Integer.parseInt(in.readLine().trim());
-				String input = ""; //환경설정 입력에 이용할 변수
 				
 				/* 환경설정 메뉴 */
 				switch(menuNum){
@@ -75,53 +78,15 @@ public class UI implements DownloadMod {
 					break;
 					
 				case 2: //저장경로 변경
-					System.out.printf("현재 저장경로: %s\n변경할 경로를 입력하세요: ", SystemInfo.PATH);
-					
-					String path = in.readLine().trim();
-					File newPath = new File(path);
-				
-					/* 입력한 경로가 만든 적이 없는 경로 & 그런데 새로 생성 실패 */
-					if(newPath.exists()==false && newPath.mkdirs()==false) {
-						ErrorHandling.printError("저장경로 변경 실패", false);
-						break;
-					}
-					
-					/* 생성 가능한 정상적인 경로라면 */
-					Configuration.setProperty("PATH", path);
-					Configuration.refresh(); //store -> load - > apply
-					System.out.println("저장경로 변경 완료!");
+					changeSavePath(in);
 					break;
 			
 				case 3: //다운받은 만화 하나로 합치기
-					boolean merge = Configuration.getBoolean("MERGE", false);
-					System.out.printf("true면 다운받은 만화를 하나의 긴 파일로 합친 파일을 추가로 생성합니다(현재: %s)\n", merge);
-					System.out.print("값 입력(true or false): ");
-					
-					input = in.readLine().toLowerCase();
-					if(!input.equals("true") && !input.equals("false")) {
-						ErrorHandling.printError("잘못된 값입니다.", false);
-						break;
-					}
-					
-					Configuration.setProperty("MERGE", input);
-					Configuration.refresh();
-					System.out.println("변경 완료");
+					mergeImage(in);
 					break;
 					
 				case 4:
-					boolean debug = Configuration.getBoolean("DEBUG", false);
-					System.out.printf("true면 다운로드 과정에 파일의 용량과 메모리 사용량이 같이 출력됩니다(현재: %s)\n", debug);
-					System.out.print("값 입력(true or false): ");
-					
-					input = in.readLine().toLowerCase();
-					if(!input.equals("true") && !input.equals("false")) {
-						ErrorHandling.printError("잘못된 값입니다.", false);
-						break;
-					}
-					
-					Configuration.setProperty("DEBUG", input);
-					Configuration.refresh();
-					System.out.println("변경 완료");
+					debugMode(in);
 					break;
 				}
 				
@@ -167,7 +132,77 @@ public class UI implements DownloadMod {
 		System.out.println(settingMenu);
 	}
 	
+	/**
+	 * 메뉴 8-2 저장경로 변경
+	 * @param in
+	 * @throws Exception
+	 */
+	private void changeSavePath(final BufferedReader in) throws Exception {
+		System.out.printf("현재 저장경로: %s\n변경할 경로를 입력하세요: ", SystemInfo.PATH);
+		
+		String path = in.readLine().trim();
+		File newPath = new File(path);
+	
+		/* 입력한 경로가 만든 적이 없는 경로 & 그런데 새로 생성 실패 */
+		if(newPath.exists()==false && newPath.mkdirs()==false) {
+			ErrorHandling.printError("저장경로 변경 실패", false);
+			return;
+		}
+		
+		/* 생성 가능한 정상적인 경로라면 */
+		Configuration.setProperty("PATH", path);
+		Configuration.refresh(); //store -> load - > apply
+		System.out.println("저장경로 변경 완료!");
+	}
+	
+	/**
+	 * 메뉴 8-3 이미지 합치기
+	 * @param in
+	 * @throws Exception
+	 */
+	private void mergeImage(final BufferedReader in) throws Exception {
+		String input;
+		boolean merge = Configuration.getBoolean("MERGE", false);
+		System.out.printf("true면 다운받은 만화를 하나의 긴 파일로 합친 파일을 추가로 생성합니다(현재: %s)\n", merge);
+		System.out.print("값 입력(true or false): ");
+		
+		input = in.readLine().toLowerCase();
+		if(!input.equals("true") && !input.equals("false")) {
+			ErrorHandling.printError("잘못된 값입니다.", false);
+			return;
+		}
+		
+		Configuration.setProperty("MERGE", input);
+		Configuration.refresh();
+		System.out.println("변경 완료");
+	}
+
+	/**
+	 * 메뉴 8-4 디버깅 모드
+	 * @param in
+	 * @throws Exception
+	 */
+	private void debugMode(final BufferedReader in) throws Exception {
+		String input;
+		boolean debug = Configuration.getBoolean("DEBUG", false);
+		System.out.printf("true면 다운로드 과정에 파일의 용량과 메모리 사용량이 같이 출력됩니다(현재: %s)\n", debug);
+		System.out.print("값 입력(true or false): ");
+		
+		input = in.readLine().toLowerCase();
+		if(!input.equals("true") && !input.equals("false")) {
+			ErrorHandling.printError("잘못된 값입니다.", false);
+			return;
+		}
+		
+		Configuration.setProperty("DEBUG", input);
+		Configuration.refresh();
+		System.out.println("변경 완료");
+	}
+	
 	public void close(){
 		instance = null;
 	}
 }
+/*
+변경사항: 메뉴별 작업들 메서드로 추출 , 싱글톤에 DCL 적용
+*/
