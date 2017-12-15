@@ -55,10 +55,11 @@ public class Preprocess implements DownloadMod {
 			break;
 		
 		case SELETIVE_DOWNLOAD: //선택적 다운로드 기능
-			showList(archiveAddrList); //다운 가능한 페이지 출력
-			System.out.print("다운받을 번호를 입력하세요: ");
-			
 			try{
+				if(archiveAddrList.size() == 0) throw new Exception("잘못된 페이지입니다: "+rawAddress);
+				
+				showList(archiveAddrList); //다운 가능한 페이지 출력
+				System.out.print("다운받을 번호를 입력하세요: ");
 				//입력받은 페이지 정규식에서 공백 모두 제거
 				String command = in.readLine().replaceAll(" ", "");
 
@@ -203,4 +204,5 @@ public class Preprocess implements DownloadMod {
 DCL 싱글톤
 정규식 파싱 스트림 사용, 각 페이지별로 try...catch 사용하여 최대한 파싱
 getArchiveAddrList에 스트림 적용
+선택적 다운로드에 빈 리스트가 들어오는 경우에 선택적 다운로드 시도 종료하게 수정
 */
