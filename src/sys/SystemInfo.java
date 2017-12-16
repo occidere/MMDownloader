@@ -78,9 +78,10 @@ public class SystemInfo {
 		System.out.print(DEVELOPER+"\t");
 		System.out.println(VERSION_INFO);
 		System.out.println("저장경로: "+Configuration.getString("PATH", DEFAULT_PATH));
-		System.out.printf("(이미지 병합: %s, 디버깅 모드: %s)\n",
+		System.out.printf("(이미지 병합: %s, 디버깅 모드: %s, 멀티스레딩: %s)\n",
 				Configuration.getBoolean("MERGE", false),
-				Configuration.getBoolean("DEBUG", false));
+				Configuration.getBoolean("DEBUG", false),
+				Configuration.getBoolean("MULTI", true));
 	}
 
 	/**
@@ -319,9 +320,14 @@ public class SystemInfo {
 				+ "  4) 디버깅 모드\n"
 				+ "   - 만화 다운로드 시 파일의 용량과 메모리 사용량을 같이 출력합니다.\n"
 				+ "   - 기본값: false\n"
+				+ "  5) 멀티스레딩 다운로드\n"
+				+ "   - 만화 다운로드를 멀티스레딩으로 진행합니다.\n"
+				+ "     메모리를 조금 더 소모하나, 총 다운로드 속도가 비약적으로 상승합니다.\n"
+				+ "   - 렉이 발생한다면 멀티스레드 모드를 꺼 주시는 것을 권장합니다.\n"
+				+ "   - 기본값: true\n"
 				+ "\n0. 종료\n"
 				+ " - 모든 작업을 중단하고 프로그램을 종료합니다.\n"
-				+ "\n작성자: occidere\t작성일: 2017.10.25\n\n";
+				+ "\n작성자: occidere\t작성일: 2017.12.16\n\n";
 		System.out.println(MESSAGE);
 	}
 	
@@ -332,3 +338,8 @@ public class SystemInfo {
 		System.getProperties().list(System.out);
 	}
 }
+/*
+변경사항
+MULTI 프로퍼티 추가
+도움말 추가
+*/
