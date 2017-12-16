@@ -85,8 +85,12 @@ public class UI implements DownloadMod {
 					mergeImage(in);
 					break;
 					
-				case 4:
+				case 4: //디버깅 모드
 					debugMode(in);
+					break;
+
+				case 5: //멀티스레딩 모드
+					multiThreadMode(in);
 					break;
 				}
 				
@@ -128,6 +132,7 @@ public class UI implements DownloadMod {
 				"  2. 저장경로 변경\n"+
 				"  3. 이미지 병합 설정\n"+
 				"  4. 디버깅 모드 설정\n"+
+				"  5. 멀티스레딩 설정\n"+
 				"  9. 뒤로";
 		System.out.println(settingMenu);
 	}
@@ -183,12 +188,11 @@ public class UI implements DownloadMod {
 	 * @throws Exception
 	 */
 	private void debugMode(final BufferedReader in) throws Exception {
-		String input;
 		boolean debug = Configuration.getBoolean("DEBUG", false);
 		System.out.printf("true면 다운로드 과정에 파일의 용량과 메모리 사용량이 같이 출력됩니다(현재: %s)\n", debug);
 		System.out.print("값 입력(true or false): ");
 		
-		input = in.readLine().toLowerCase();
+		String input = in.readLine().toLowerCase();
 		if(!input.equals("true") && !input.equals("false")) {
 			ErrorHandling.printError("잘못된 값입니다.", false);
 			return;
@@ -199,10 +203,32 @@ public class UI implements DownloadMod {
 		System.out.println("변경 완료");
 	}
 	
+	/**
+	 * 메뉴 8-5 멀티스레딩 모드
+	 * @param in
+	 * @throws Exception
+	 */
+	private void multiThreadMode(final BufferedReader in) throws Exception {
+		boolean multi = Configuration.getBoolean("MULTI", false);
+		System.out.printf("true면 멀티스레드를 이용해 만화를 다운로드 합니다(현재: %s)\n", multi);
+		System.out.print("값 입력(true or false): ");
+		
+		String input = in.readLine().toLowerCase();
+		if(!input.equals("true") && !input.equals("false")) {
+			ErrorHandling.printError("잘못된 값입니다.", false);
+			return;
+		}
+		
+		Configuration.setProperty("MULTI", input);
+		Configuration.refresh();
+		System.out.println("변경 완료");
+	}
+	
 	public void close(){
 		instance = null;
 	}
 }
 /*
 변경사항: 메뉴별 작업들 메서드로 추출 , 싱글톤에 DCL 적용
+MULTI 설정 추가
 */
