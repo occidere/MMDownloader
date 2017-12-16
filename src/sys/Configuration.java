@@ -12,9 +12,8 @@ import java.util.Properties;
 import common.ErrorHandling;
 
 /**
- * 환경설정을 담당하는 클래스
+ * 환경설정을 담당하는 static 클래스
  * @author occidere
- *
  */
 public class Configuration {
 	private Configuration() {}
@@ -42,6 +41,7 @@ public class Configuration {
 		if(prop.containsKey("PATH")==false) prop.setProperty("PATH", SystemInfo.DEFAULT_PATH);
 		if(prop.containsKey("MERGE")==false) prop.setProperty("MERGE", "false");
 		if(prop.containsKey("DEBUG")==false) prop.setProperty("DEBUG", "false");
+		if(prop.containsKey("MULTI")==false) prop.setProperty("MULTI", "true");
 		
 		/************************************************************************/
 		
@@ -160,3 +160,7 @@ public class Configuration {
 		return profile.exists();
 	}
 }
+/*
+변경사항
+MULTI 프로퍼티 추가
+*/
