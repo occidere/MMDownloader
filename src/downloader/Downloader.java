@@ -19,7 +19,9 @@ import org.jsoup.Connection.Response;
 import java.util.List;
 import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.HttpURLConnection;
@@ -114,9 +116,16 @@ public class Downloader {
 			for(String imgURL : imgList)
 				workers[pageNum] = new Worker(imgURL, path, subFolder, ++pageNum, numberOfPages);
 			
-			Arrays.stream(workers)
-				.parallel() // 병렬 스트림 다운로드 처리
-				.forEach(w-> w.start());
+			// 다운로드 스트림
+			Stream<Worker> downloadStream = Arrays.stream(workers);
+			
+			// 멀티스레드 모드가 true이면 parallel stream 생성
+			if(Configuration.getBoolean("MULTI", true) == true) {
+				downloadStream.parallel().forEach(w-> w.start());
+			}
+			else { // 멀티스레드 false일 시 순차 다운로드
+				downloadStream.forEach(w-> w.run());
+			}
 			
 			Arrays.stream(workers).forEach(w-> {
 				try { w.join(); } // Join
@@ -427,4 +436,5 @@ Jsoup, HtmlUnit 파싱 메서드를 throw new Exception 방식으로 변경
 parseImageURL 부분 스트림으로 변경
 다운로드 전용 Worker 클래스 신설
 하나의 만화 내부의 이미지들을 parallelStream으로 멀티스레딩 다운로드(join 포함)
+MULTI Property 값에 따라 병렬 or 순차 다운로드 분기 설정
 */
