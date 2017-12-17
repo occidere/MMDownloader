@@ -19,16 +19,15 @@ import org.jsoup.Connection.Response;
 import java.util.List;
 import java.util.Arrays;
 import java.util.logging.Level;
-import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.net.HttpURLConnection;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 
 public class Downloader {
 	private Downloader(){}
@@ -48,8 +47,8 @@ public class Downloader {
 	private final String PASSWORD = "qndxkr"; //만화 비밀번호
 	private final String DOMAIN = "http://wasabisyrup.com";
 	
+	final int BUF_SIZE = 1048576;
 	final int MAX_WAIT_TIME = 60000; //최대 대기시간 1분
-	private final int BUF_SIZE = 1048576;
 	
 	/**
 	 * 선택된 페이지들만 다운로드
@@ -307,6 +306,17 @@ public class Downloader {
 	}
 	
 	/**
+	 * <b>특수문자 제거 메서드</b><br>
+	 * {@code \ / : * ? < > | . }는 공백으로 대체됨<br>
+	 * {@code " }는 {@code ' }로 대체됨 
+	 * @param rawText 특수문자가 포함된 스트링
+	 * @return 특수문자가 제거된 스트링
+	 */
+	private String removeSpecialCharacter(String rawText){
+		return rawText.replaceAll("[\\\\/:*?<>|.]", " ").replaceAll("[\"]", "'").trim();
+	}
+	
+	/**
 	 * 다운로드 속도를 스트링 형식으로 반환
 	 * <i>ex) 3.21 MB/s</i>
 	 * @param byteSize 다운로드 받을 파일의 바이트 사이즈
@@ -320,17 +330,6 @@ public class Downloader {
 		int i;
 		for(i=0; spd>=1000; i++, spd/=1000);
 		return String.format("%6.2f %s/s", spd, unit[i]);
-	}
-	
-	/**
-	 * <b>특수문자 제거 메서드</b><br>
-	 * {@code \ / : * ? < > | . }는 공백으로 대체됨<br>
-	 * {@code " }는 {@code ' }로 대체됨 
-	 * @param rawText 특수문자가 포함된 스트링
-	 * @return 특수문자가 제거된 스트링
-	 */
-	private String removeSpecialCharacter(String rawText){
-		return rawText.replaceAll("[\\\\/:*?<>|.]", " ").replaceAll("[\"]", "'").trim();
 	}
 	
 	/**
@@ -437,4 +436,5 @@ parseImageURL 부분 스트림으로 변경
 다운로드 전용 Worker 클래스 신설
 하나의 만화 내부의 이미지들을 parallelStream으로 멀티스레딩 다운로드(join 포함)
 MULTI Property 값에 따라 병렬 or 순차 다운로드 분기 설정
+안 쓰이는 패키지 import 제거
 */
