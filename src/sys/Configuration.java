@@ -5,8 +5,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.lang.reflect.Field;
-import java.util.Enumeration;
+import java.util.Arrays;
 import java.util.Properties;
 
 import common.ErrorHandling;
@@ -18,16 +17,17 @@ import common.ErrorHandling;
 public class Configuration {
 	private Configuration() {}
 	
-	//환경설정 파일 위치: Marumaru/MMDownloader.properties로 고정
-	private static String CONF_PATH = SystemInfo.DEFAULT_PATH + SystemInfo.fileSeparator + "MMDownloader.properties";
+	// 환경설정 파일 이름
+	private static final String CONF_NAME = "MMDownloader.properties";
+	// 환경설정 파일 위치: Marumaru/MMDownloader.properties로 고정
+	private static String CONF_PATH = SystemInfo.DEFAULT_PATH + SystemInfo.fileSeparator + CONF_NAME;
 	
 	private static File profile = new File(CONF_PATH);
-	private static FileInputStream fis = null;
-	private static FileOutputStream fos = null;
 	private static Properties prop = new Properties();
 	
 	/** 
-	 * 설정파일 initialize 메서드
+	 * 설정파일 initialize 메서드<br>
+	 * load -> set -> refresh(store -> load -> apply) 의 과정
 	 */
 	public static void init() {
 		/* 시작과 동시에 설정파일(MMDownloader.properties) 읽어들여 적용 */
@@ -57,15 +57,8 @@ public class Configuration {
 	 * @throws Exception
 	 */
 	public static void loadProperty() throws Exception {
-		if(profile.exists() == false) {
-			profile = new File(CONF_PATH);
-			profile.createNewFile();
-		}
-		if(prop == null) prop = new Properties();
-		
-		fis = new FileInputStream(profile);
-		prop.load(new BufferedInputStream(fis));
-		fis.close();
+		createDefaultFiles();
+		prop.load(new BufferedInputStream(new FileInputStream(profile)));
 	}
 
 	/**
@@ -73,38 +66,26 @@ public class Configuration {
 	 * @throws Exception
 	 */
 	public static void storeProperty() throws Exception {
-		if(profile.exists() == false) {
-			profile = new File(CONF_PATH);
-			profile.createNewFile();
-		}
-		if(prop == null) prop = new Properties();
-		
-		fos = new FileOutputStream(profile);
-		prop.store(new BufferedOutputStream(fos), "");
-		fos.close();
+		createDefaultFiles();
+		prop.store(new BufferedOutputStream(new FileOutputStream(profile)), "");
 	}
 	
 	/**
-	 * 불러온 Property를 적용하는 메서드(reflect 이용)
+	 * 외부 class에 존재하는 프로퍼티 필드들에 대해 
+	 * 새로 부여한 설정값을 적용하는 메서드(Reflection 이용)
+	 * <li> 대상: SystemInfo(PATH) </li>
 	 */
-	public static void applyProperty() {
-		Enumeration<?> propNames = prop.propertyNames();
-		String propName = null, fieldName = null;
-		
-		Field field[] = SystemInfo.class.getDeclaredFields();
-		while(propNames.hasMoreElements()) {
-			propName = (String)propNames.nextElement();
-			for(Field each : field) {
-				fieldName = each.getName();
-				if(fieldName.equals(propName)) {
-					/* 변수명에 맞는 이름을 찾아서 설정 적용 */
-					try { each.set(fieldName, prop.getProperty(propName)); }
-					catch(Exception e) {
-						ErrorHandling.saveErrLog("설정값 적용 실패: "+propName, "", e);
-					}
+	private static void applyProperty() {
+		Arrays.stream(SystemInfo.class.getDeclaredFields()) // SystemInfo 클래스의 모든 필드들을 불러옴
+			.filter(f-> prop.containsKey(f.getName())) // 프로퍼티에 존재하는 필드들만 걸러냄
+			.forEach(f-> {
+				try { // 변수명에 맞는 이름을 찾아서 설정 적용
+					f.set(SystemInfo.class, prop.getProperty(f.getName()));
 				}
-			}
-		}
+				catch (Exception e) {
+					ErrorHandling.saveErrLog("설정값 적용 실패: "+f.getName(), f.toString(), e);
+				}
+			});
 	}
 	
 	/**
@@ -115,6 +96,20 @@ public class Configuration {
 		storeProperty();
 		loadProperty();
 		applyProperty();
+	}
+	
+	/**
+	 * 필수 파일들이 없으면 생성하는 메서드
+	 * <li>{@code File profile = new File(CONF_PATH);}</li>
+	 * <li>{@code Properties prop = new Properties();}</li>
+	 * @throws Exception
+	 */
+	private static void createDefaultFiles() throws Exception {
+		if(profile.exists() == false) {
+			profile = new File(CONF_PATH);
+			profile.createNewFile();
+		}
+		if(prop == null) prop = new Properties();
 	}
 	
 	public static void setProperty(String key, String value) {
@@ -163,4 +158,8 @@ public class Configuration {
 /*
 변경사항
 MULTI 프로퍼티 추가
+설정파일 이름 변수로 분리(CONF_NAME = "MMDownloader.properties"
+applyProperty을 stream으로 변경 & 시간복잡도 O(N^2) -> O(N)
+applyProperty의 접근제어자 public 에서 private로 수정
+File profile과 Properties prop을 생성하는 메서드 추가(createDefaultFiles)
 */
