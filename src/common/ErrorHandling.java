@@ -1,5 +1,6 @@
 package common;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -9,9 +10,8 @@ import java.util.Date;
 import sys.SystemInfo;
 
 /**
- * 공통적으로 사용되는 에러 처리 클래스
+ * 공통적으로 사용되는 에러 처리 static 클래스
  * @author occidere
- *
  */
 public class ErrorHandling {
 	private ErrorHandling() {}
@@ -51,16 +51,19 @@ public class ErrorHandling {
 			SystemInfo.makeDir(SystemInfo.ERROR_LOG_PATH); //로그파일 저장 경로 없을 시를 대비해 만듦
 			
 			/* 로그 저장 (이어쓰기) */
-			PrintWriter pw = new PrintWriter(new FileWriter(SystemInfo.ERROR_LOG_PATH + fileSeparator + logfile, true));
-			pw.write(logfile + lineSeparator);
-			pw.write(message + lineSeparator);
+			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(SystemInfo.ERROR_LOG_PATH + fileSeparator + logfile, true)));
+			pw.write(logfile + lineSeparator); // 기본 기술 내용
+			pw.write(message + lineSeparator); // 추가 기술 메시지
 			e.printStackTrace(pw);
 			pw.write(lineSeparator);
 			pw.close();
-			
 		} catch (Exception ex) {
 			printError("로그 저장 실패", false);
 			ex.printStackTrace();
 		}
 	}
 }
+/*
+변경사항
+PrintWriter내부에 BufferedWriter로 한번 더 감쌈
+*/
