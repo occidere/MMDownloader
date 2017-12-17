@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.net.URL;
@@ -56,8 +58,8 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.4.5.5"; //프로그램 버전
-	private static final String UPDATED_DATE = "2017.12.14"; //업데이트 날짜
+	private static final String VERSION = "0.5.0.0"; //프로그램 버전
+	private static final String UPDATED_DATE = "2017.12.17"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
@@ -101,13 +103,12 @@ public class SystemInfo {
 				LATEST_UPDATED_DATE = e.select("#LC2").text().split("=")[1];
 				LATEST_WINDOWS = e.select("#LC3").text().split("=")[1];
 				LATEST_OTHERS = e.select("#LC4").text().split("=")[1];
+				
+				LATEST_VERSION_INFO = String.format("최신버전: %s (%s)", LATEST_VERSION, LATEST_UPDATED_DATE);
 			}
 			catch(Exception e){
-				LATEST_VERSION = LATEST_UPDATED_DATE = "연결실패";
 				ErrorHandling.saveErrLog("업데이트 서버 연결 실패", "", e);
-			}
-			finally{
-				LATEST_VERSION_INFO = String.format("최신버전: %s (%s)", LATEST_VERSION, LATEST_UPDATED_DATE);
+				return; //업데이트 실패 시 버전 체크 작업 종료
 			}
 		}
 		
@@ -115,7 +116,7 @@ public class SystemInfo {
 		System.out.println(LATEST_VERSION_INFO); //서버의 최신 버전 출력
 		
 		//최신버전 체크가 제대로 됬을 때, 현재 버전이 최신 버전보다 낮으면 업데이트 여부 물어봄.
-		if(!LATEST_VERSION_INFO.contains("연결실패")){
+		if(LATEST_VERSION_INFO != null && LATEST_VERSION_INFO.length() > 0){
 			int curVersion = Integer.parseInt(VERSION.replace(".", ""));
 			int latestVersion = Integer.parseInt(LATEST_VERSION.replace(".", ""));
 			
@@ -131,16 +132,12 @@ public class SystemInfo {
 	 * <p>사용자의 OS 값에 따라서 윈도우 / 그 이외(맥, 리눅스) 버전을 다운로드
 	 * @param in 키보드 입력용 버퍼리더 객체
 	 */
-	private static void downloadLatestVersion(BufferedReader in){
+	private static void downloadLatestVersion(final BufferedReader in){
 		try{
-			final byte buf[] = new byte[10485760]; //10MB 버퍼
+			final int BUF_SIZE = 10485760;
 			//다운받은 바이트 길이, MB로 나누기 위한 값, 직전 다운로드 MB 값
 			int len = 0, MB = 1024*1024, preDownloadedMB = 0;
 			double accumSize = 0, totalSize = 0;//누적 다운로드 바이트, 총 파일 크기 바이트
-			
-			FileOutputStream fos;
-			InputStream is;
-			URLConnection conn;
 			
 			String select, fileName = null, fileURL = null;
 			boolean isCorrectlySelected = false;
@@ -153,12 +150,12 @@ public class SystemInfo {
 					isCorrectlySelected = true;
 					makeDir(); //Marumaru폴더 생성
 					
-					/* OS가 윈도우면, 파일 이름 = MMdownloader_0.2.9_Windows.zip */
+					/* OS가 윈도우면, 파일 이름 = MMdownloader_0.5.0.0_Windows.zip */
 					if(OS_NAME.contains("Windows")){
 						fileName = LATEST_WINDOWS.substring(LATEST_WINDOWS.lastIndexOf("/")+1);
 						fileURL = LATEST_WINDOWS;
 					}
-					/* OS가 윈도우 이외면 파일 이름 = MMdownloader_0.2.9_Mac,Linux.zip */
+					/* OS가 윈도우 이외면 파일 이름 = MMdownloader_0.5.0.0_Mac,Linux.zip */
 					else{
 						fileName = LATEST_OTHERS.substring(LATEST_OTHERS.lastIndexOf("/")+1);
 						fileURL = LATEST_OTHERS;
@@ -167,15 +164,15 @@ public class SystemInfo {
 					System.out.println("다운로드중 ...");
 					System.out.println("저장 위치: "+DEFAULT_PATH+fileSeparator+fileName);
 					
-					fos = new FileOutputStream(DEFAULT_PATH+fileSeparator+fileName);
-					conn = (HttpURLConnection)new URL(fileURL).openConnection();
-					conn.setConnectTimeout(300000);
-					is = conn.getInputStream();
+					BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(DEFAULT_PATH+fileSeparator+fileName), BUF_SIZE);
+					HttpURLConnection conn = (HttpURLConnection)new URL(fileURL).openConnection();
+					conn.setConnectTimeout(60000); // 타임아웃 1분 요청
+					BufferedInputStream bis = new BufferedInputStream(conn.getInputStream(), BUF_SIZE);
 					
-					totalSize = (double)conn.getContentLength()/MB; //KB
+					totalSize = (double)conn.getContentLength() / MB; //KB
 					
-					while((len = is.read(buf)) != -1){
-						fos.write(buf, 0, len);
+					while((len = bis.read()) != -1){
+						bos.write(len);
 						accumSize += (double)len / MB;
 						
 						if(preDownloadedMB < (int)accumSize){ //MB단위로만 로그 출력
@@ -183,8 +180,8 @@ public class SystemInfo {
 							preDownloadedMB = (int)accumSize;
 						}
 					}
-					fos.close();
-					is.close();
+					bos.close();
+					bis.close();
 					
 					//마지막 로그 출력
 					System.out.printf("%5.2fMB / %5.2fMB ... 완료!\n", accumSize, totalSize);
@@ -342,4 +339,5 @@ public class SystemInfo {
 변경사항
 MULTI 프로퍼티 추가
 도움말 추가
+최신버전 다운로드 부분 BufferedInputStream, BufferedOutputStream 도입
 */
