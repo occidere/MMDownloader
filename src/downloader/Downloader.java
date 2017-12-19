@@ -17,7 +17,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.Connection.Response;
 
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -118,20 +120,40 @@ public class Downloader {
 			// 다운로드 스트림
 			Stream<Worker> downloadStream = Arrays.stream(workers);
 			
-			// 멀티스레드 모드가 true이면 parallel stream 생성
-			if(Configuration.getBoolean("MULTI", true) == true) {
-				downloadStream.parallel().forEach(w-> w.start());
+			int numberOfThreads = 4; // 스레드 개수 기본 4
+			
+			// 멀티스레딩 true면 스레드 개수 4개 (개수 조정 필요)
+			if(Configuration.getBoolean("MULTI", true) == true)
+				numberOfThreads = 4;
+			else // 멀티스레딩 false면 스레드 개수를 1개로 하여 순차 처리
+				numberOfThreads = 1;
+			
+			ForkJoinPool pool = new ForkJoinPool(numberOfThreads); // 1: Sequential, N: Parallel
+			try {
+				pool.submit(()->{
+					downloadStream.parallel()
+						.forEach(w-> w.run()); // start() -> run()
+				}).get(); // Blocking until finished (= Join)
 			}
-			else { // 멀티스레드 false일 시 순차 다운로드
-				downloadStream.forEach(w-> w.run());
+			catch (Exception e) {
+				ErrorHandling.saveErrLog("다운로드 실패", "제목: "+subFolder, e);
 			}
 			
-			Arrays.stream(workers).forEach(w-> {
-				try { w.join(); } // Join
-				catch (Exception e) {
-					ErrorHandling.saveErrLog("병렬스트림 스레드 Join 실패", "Worker: "+w, e);
-				}
-			});
+//			// 멀티스레드 모드가 true이면 parallel stream 생성
+//			if(Configuration.getBoolean("MULTI", true) == true) {
+//				downloadStream.parallel().forEach(w-> w.start());
+//			}
+//			else { // 멀티스레드 false일 시 순차 다운로드
+//				downloadStream.forEach(w-> w.run());
+//			}
+//			
+//			Arrays.stream(workers).forEach(w-> {
+//				try { w.join(); } // Join
+//				catch (Exception e) {
+//					ErrorHandling.saveErrLog("병렬스트림 스레드 Join 실패", "Worker: "+w, e);
+//				}
+//			});
+			
 		}
 		
 		/* 다운받은 만화들을 하나로 합치는 property 값이 true면 합침(기본: false) */
@@ -368,17 +390,18 @@ public class Downloader {
 		
 		@Override
 		public void run() {
-			try {	//try...catch를 foreach 내부에 사용해서 이미지 한개 다운로드가 실패해도 전체가 종료되는 불상사 방지
+			try {	//try...catch를 Worker 내부에 사용해서 이미지 한개 다운로드가 실패해도 전체가 종료되는 불상사 방지
 				long st = System.currentTimeMillis();
 				int imageSize = download();
 				long elapsed = (System.currentTimeMillis() - st);
 
 				System.out.printf("%3d / %3d ...... 완료! (%s)", pageNum, numberOfPages, getStrSpeed(imageSize, elapsed));
 				
-				// DEBUG값이 true이면 다운받은 이미지 용량 & 메모리 정보 출력
-				if(Configuration.getBoolean("DEBUG", false)) {
+				// DEBUG값이 true이면 다운받은 이미지 용량 & 메모리 정보, 스레드 & 날짜 정보 출력
+				if(Configuration.getBoolean("DEBUG", false) == true) {
 					System.out.printf("[%3d KB]\n", imageSize/1000);
 					util.MemInfo.printMemInfo(); //메모리 정보 출력(줄바꿈 안함)
+					System.out.printf("\n(Thread Info: %s, Date: %s)", Thread.currentThread(), new Date()); // 스레드 & 날짜 정보 출력
 				}
 				System.out.println();
 			}
@@ -437,4 +460,6 @@ parseImageURL 부분 스트림으로 변경
 하나의 만화 내부의 이미지들을 parallelStream으로 멀티스레딩 다운로드(join 포함)
 MULTI Property 값에 따라 병렬 or 순차 다운로드 분기 설정
 안 쓰이는 패키지 import 제거
+병렬 스트림을 ForkJoinPool을 이용해 제어(프로토타입)
+디버깅 정보에 스레드 & Date 정보 추가
 */
