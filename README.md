@@ -27,6 +27,17 @@
 * 다운로드 속도는 한 편당 최대 5분까지 소요되며, 이는 마루마루 서버 상태와 PC의 네트워크 속도에 제일 큰 영향을 받습니다.
 
 ### 업데이트 내역
+--- ver 0.5.0.0 ---
+* [Beta] 코드 가독성 및 성능 향상을 위한 전반적인 대규모 리팩토링 진행
+* [Beta] Stream & Lambda 도입으로 인한 Java7 이하 버전에 대한 지원 중단
+* [Beta] 멀티스레딩 다운로드 모드 추가 -> 다운로드 속도 향상
+* [Beta] 멀티스레딩 환경설정 프로퍼티 추가(MULTI, Default: true)
+* [Beta] HtmlUnit v2.28로 업데이트
+* [Beta] 디버깅 정보에 스레드 & 날짜 정보 추가 출력
+* [Beta] 싱글톤을 DCL 방식으로 모두 변경
+* [Beta] v0.4.5.0 의 업데이트 내역 반영(gzip, BufferedInputStream, BufferedOutputStream)
+* [Beta] 기존 Beta(0.4.5.0) 파일 삭제
+
 --- ver 0.4.5.0 ---
 * [Beta] byte buf[] 없애고 BufferedInputStream, BufferedOutputStream으로 대체
 * [Beta] Request Header에 Accept-Encoding: gzip 추가
