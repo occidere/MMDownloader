@@ -19,7 +19,6 @@ import org.jsoup.Connection.Response;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -117,43 +116,34 @@ public class Downloader {
 			for(String imgURL : imgList)
 				workers[pageNum] = new Worker(imgURL, path, subFolder, ++pageNum, numberOfPages);
 			
+			// 사용가능한 코어 수. 최소 1개는 보장
+			final int CORE_COUNT = Math.max(1, Runtime.getRuntime().availableProcessors());
+			int numberOfThreads, multi = Configuration.getInt("MULTI", 2); // value of MULTI property
+			
+			/* 0: Sequential (Single Thread Download)
+			 * 1: Thread count = available core count / 2
+			 * 2: Thread count = available core count (DEFAULT)
+			 * 3: Thread count = available core count * 2
+			 * 4: Thread count = Unlimited (Equal to numberOfPages)
+			 */
+			if(multi == 0) numberOfThreads = 1;
+			else if(multi == 1) numberOfThreads = CORE_COUNT >>> 1;
+			else if(multi == 2) numberOfThreads = CORE_COUNT;
+			else if(multi == 3) numberOfThreads = CORE_COUNT << 1;
+			else numberOfThreads = numberOfPages;
+			
 			// 다운로드 스트림
-			Stream<Worker> downloadStream = Arrays.stream(workers);
-			
-			int numberOfThreads = 4; // 스레드 개수 기본 4
-			
-			// 멀티스레딩 true면 스레드 개수 4개 (개수 조정 필요)
-			if(Configuration.getBoolean("MULTI", true) == true)
-				numberOfThreads = 4;
-			else // 멀티스레딩 false면 스레드 개수를 1개로 하여 순차 처리
-				numberOfThreads = 1;
-			
+			Stream<Worker> downloadStream = Arrays.stream(workers).parallel();
+
 			ForkJoinPool pool = new ForkJoinPool(numberOfThreads); // 1: Sequential, N: Parallel
 			try {
 				pool.submit(()->{
-					downloadStream.parallel()
-						.forEach(w-> w.run()); // start() -> run()
+					downloadStream.forEach(w-> w.run()); // start() -> run()
 				}).get(); // Blocking until finished (= Join)
 			}
 			catch (Exception e) {
 				ErrorHandling.saveErrLog("다운로드 실패", "제목: "+subFolder, e);
 			}
-			
-//			// 멀티스레드 모드가 true이면 parallel stream 생성
-//			if(Configuration.getBoolean("MULTI", true) == true) {
-//				downloadStream.parallel().forEach(w-> w.start());
-//			}
-//			else { // 멀티스레드 false일 시 순차 다운로드
-//				downloadStream.forEach(w-> w.run());
-//			}
-//			
-//			Arrays.stream(workers).forEach(w-> {
-//				try { w.join(); } // Join
-//				catch (Exception e) {
-//					ErrorHandling.saveErrLog("병렬스트림 스레드 Join 실패", "Worker: "+w, e);
-//				}
-//			});
-			
 		}
 		
 		/* 다운받은 만화들을 하나로 합치는 property 값이 true면 합침(기본: false) */
@@ -238,7 +228,7 @@ public class Downloader {
 	/**
 	 * Jsoup을 이용한 HTML 코드 파싱.
 	 * @param eachArchiveAddress 실제 만화가 담긴 아카이브 주소
-	 * @return 성공하면 html 코드를 리턴, 실패시 null 리턴
+	 * @return 성공하면 html 코드를 리턴
 	 */
 	private String getHtmlPageJsoup(String eachArchiveAddress) throws Exception {
 		System.out.print("고속 연결 시도중 ... ");
@@ -401,7 +391,7 @@ public class Downloader {
 				if(Configuration.getBoolean("DEBUG", false) == true) {
 					System.out.printf("[%3d KB]\n", imageSize/1000);
 					util.MemInfo.printMemInfo(); //메모리 정보 출력(줄바꿈 안함)
-					System.out.printf("\n(Thread Info: %s, Date: %s)", Thread.currentThread(), new Date()); // 스레드 & 날짜 정보 출력
+					System.out.printf("\n(Thread Info: %s)", Thread.currentThread()); // 스레드 정보 출력
 				}
 				System.out.println();
 			}
@@ -462,4 +452,6 @@ MULTI Property 값에 따라 병렬 or 순차 다운로드 분기 설정
 안 쓰이는 패키지 import 제거
 병렬 스트림을 ForkJoinPool을 이용해 제어(프로토타입)
 디버깅 정보에 스레드 & Date 정보 추가
+MULTI 프로퍼티 값 변경 & ForkJoinPool 스레드 개수 조절
+디버깅 정보에 Date 정보 제거
 */
