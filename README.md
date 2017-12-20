@@ -9,7 +9,7 @@
 
 ### 사용법(Gitbook): https://occidere.gitbooks.io/mmdownloader/content/
 
-### 다운로드: ![Release](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.2)
+### 다운로드: [Release](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.2)
 
 ### 주의사항
 * 해당 프로그램은 HtmlUnit과 Jsoup 라이브러리를 사용하였으며, Apache License 2.0을 따르고 있습니다.
