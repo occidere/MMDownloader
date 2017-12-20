@@ -41,7 +41,7 @@ public class Configuration {
 		if(prop.containsKey("PATH")==false) prop.setProperty("PATH", SystemInfo.DEFAULT_PATH);
 		if(prop.containsKey("MERGE")==false) prop.setProperty("MERGE", "false");
 		if(prop.containsKey("DEBUG")==false) prop.setProperty("DEBUG", "false");
-		if(prop.containsKey("MULTI")==false) prop.setProperty("MULTI", "true");
+		if(prop.containsKey("MULTI")==false) prop.setProperty("MULTI", "2"); // MULTI = 0, 1, 2, 3, 4
 		
 		/************************************************************************/
 		
