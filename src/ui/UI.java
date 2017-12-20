@@ -209,12 +209,18 @@ public class UI implements DownloadMod {
 	 * @throws Exception
 	 */
 	private void multiThreadMode(final BufferedReader in) throws Exception {
-		boolean multi = Configuration.getBoolean("MULTI", false);
-		System.out.printf("true면 멀티스레드를 이용해 만화를 다운로드 합니다(현재: %s)\n", multi);
-		System.out.print("값 입력(true or false): ");
+		int multi = Configuration.getInt("MULTI", 2);
+		System.out.printf("다운로드에 할당할 스레드 값 설정합니다(현재: %d)\n", multi);
+		System.out.println("* 기본 값은 2이며, 대체로 값이 커질수록 성능은 좋아지나 메모리 사용량이 증가합니다.\n"
+						+ " 0: 멀티스레딩을 하지 않습니다 (초저성능)\n"
+						+ " 1: 코어 개수의 절반 만큼을 할당합니다 (저성능)\n"
+						+ " 2: 코어 개수 만큼을 할당합니다 (기본값, 권장)\n"
+						+ " 3: 코어 개수의 2배 만큼을 할당합니다 (고성능)\n"
+						+ " 4: 사용할 수 있는 최대한 할당합니다 (초고성능)");
+		System.out.print("값 입력(0 ~ 4): ");
 		
-		String input = in.readLine().toLowerCase();
-		if(!input.equals("true") && !input.equals("false")) {
+		String input = in.readLine().replaceAll(" ", "");
+		if(input.matches("[0-4]") == false) {
 			ErrorHandling.printError("잘못된 값입니다.", false);
 			return;
 		}
