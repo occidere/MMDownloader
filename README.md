@@ -1,4 +1,10 @@
 # MMDownloader
+[![Latest](https://img.shields.io/badge/Latest-v0.4.4.3-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.4.4.3)
+[![Beta](https://img.shields.io/badge/Beta-v0.5.0.2-orange.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.2-beta)
+![Downloads](https://img.shields.io/github/downloads/occidere/MMDownloader/total.svg)
+[![Java Version](https://img.shields.io/badge/Java-1.8-red.svg)](https://www.java.com/ko/)
+[![GitHub license](https://img.shields.io/github/license/occidere/MMDownloader.svg)](https://github.com/occidere/MMDownloader/blob/master/LICENSE)
+
 마루마루 다운로더 신규 프로젝트
 
 ### 사용법(Gitbook): https://occidere.gitbooks.io/mmdownloader/content/
