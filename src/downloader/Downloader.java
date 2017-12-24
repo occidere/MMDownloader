@@ -132,6 +132,9 @@ public class Downloader {
 			else if(multi == 3) numberOfThreads = CORE_COUNT << 1;
 			else numberOfThreads = numberOfPages;
 			
+			// 스레드 개수가 전체 페이지 수를 초과하지 않게 조정
+			numberOfThreads = Math.min(numberOfThreads, numberOfPages);
+			
 			// 다운로드 스트림
 			Stream<Worker> downloadStream = Arrays.stream(workers).parallel();
 
@@ -441,17 +444,5 @@ public class Downloader {
 }
 /*
 변경사항
-DCL 싱글톤 적용
-특수문자 정규식 \\\\ 로 수정, "는 '로 수정
-UTF-8 인코딩 부분 스트림으로 변경
-Jsoup, HtmlUnit 파싱 메서드를 throw new Exception 방식으로 변경
-parseImageURL 부분 스트림으로 변경
-다운로드 전용 Worker 클래스 신설
-하나의 만화 내부의 이미지들을 parallelStream으로 멀티스레딩 다운로드(join 포함)
-MULTI Property 값에 따라 병렬 or 순차 다운로드 분기 설정
-안 쓰이는 패키지 import 제거
-병렬 스트림을 ForkJoinPool을 이용해 제어(프로토타입)
-디버깅 정보에 스레드 & Date 정보 추가
-MULTI 프로퍼티 값 변경 & ForkJoinPool 스레드 개수 조절
-디버깅 정보에 Date 정보 제거
+스레드 개수가 전체 페이지 수를 넘지 않게 조정
 */
