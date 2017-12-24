@@ -55,7 +55,3 @@ public class UserAgent {
 		return USER_AGENTS[new Random().nextInt(USER_AGENTS.length)];
 	}
 }
-/*
-변경사항
-User-Agent 배열을 상수로 변경
-*/

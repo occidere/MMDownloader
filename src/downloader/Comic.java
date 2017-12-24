@@ -59,9 +59,3 @@ public class Comic {
 		return String.format("%s_%s\t%s\t%s", title, titleNo, address, imgURL);
 	}
 }
-
-/*
-변경사항:
-생성자에 trim 적용
-toString 추가
-*/

@@ -155,11 +155,3 @@ public class Configuration {
 		return profile.exists();
 	}
 }
-/*
-변경사항
-MULTI 프로퍼티 추가
-설정파일 이름 변수로 분리(CONF_NAME = "MMDownloader.properties"
-applyProperty을 stream으로 변경 & 시간복잡도 O(N^2) -> O(N)
-applyProperty의 접근제어자 public 에서 private로 수정
-File profile과 Properties prop을 생성하는 메서드 추가(createDefaultFiles)
-*/

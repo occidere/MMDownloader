@@ -65,8 +65,3 @@ public class ImageMerge{
 		System.out.println("성공");
 	}
 }
-/*
-변경사항
-FilenameFilter 구현을 람다식으로 변경
-확장자 체크 방식을 기존의 O(N^2)의 endswith체크에서 정규식 방식으로 변경
-*/

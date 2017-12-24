@@ -63,7 +63,3 @@ public class ErrorHandling {
 		}
 	}
 }
-/*
-변경사항
-PrintWriter내부에 BufferedWriter로 한번 더 감쌈
-*/

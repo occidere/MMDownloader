@@ -234,7 +234,3 @@ public class UI implements DownloadMod {
 		instance = null;
 	}
 }
-/*
-변경사항: 메뉴별 작업들 메서드로 추출 , 싱글톤에 DCL 적용
-MULTI 설정 추가
-*/

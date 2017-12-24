@@ -58,8 +58,8 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.5.0.2"; //프로그램 버전
-	private static final String UPDATED_DATE = "2017.12.20"; //업데이트 날짜
+	private static final String VERSION = "0.5.0.3"; //프로그램 버전
+	private static final String UPDATED_DATE = "2017.12.24"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
@@ -341,11 +341,3 @@ public class SystemInfo {
 		+ " - 모든 작업을 중단하고 프로그램을 종료합니다.\n"
 		+ "\n작성자: occidere\t작성일: 2017.12.20\n\n";
 }
-/*
-변경사항
-MULTI 프로퍼티 추가
-도움말 추가
-최신버전 다운로드 부분 BufferedInputStream, BufferedOutputStream 도입
-MULTI 프로퍼티 설명 변경
-도움말 문자열을 static 변수로 뺌
-*/
