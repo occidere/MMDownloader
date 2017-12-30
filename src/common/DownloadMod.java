@@ -9,5 +9,9 @@ package common;
 public interface DownloadMod {
 	public static final int ALL_DOWNLOAD = 10;
 	public static final int SINGLE_DOWNLOAD = 20;
-	public static final int SELETIVE_DOWNLOAD = 30;
+	public static final int SELECTIVE_DOWNLOAD = 30;
 }
+/* 
+변경사항
+1. 오타 수정
+*/
