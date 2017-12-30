@@ -54,7 +54,7 @@ public class Preprocess implements DownloadMod {
 			downloader.download(archiveAddrList);
 			break;
 		
-		case SELETIVE_DOWNLOAD: //선택적 다운로드 기능
+		case SELECTIVE_DOWNLOAD: //선택적 다운로드 기능
 			try{
 				if(archiveAddrList.size() == 0) throw new Exception("잘못된 페이지입니다: "+rawAddress);
 				
@@ -198,3 +198,7 @@ public class Preprocess implements DownloadMod {
 		downloader.close();
 	}
 }
+/* 
+ 변경사항
+1. 오타 수정
+*/
