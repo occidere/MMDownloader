@@ -53,7 +53,7 @@ public class UI implements DownloadMod {
 			case 2: //선택적 다운로드
 				System.out.print("전체보기 주소를 입력하세요: ");
 				comicAddress = in.readLine().trim();
-				preprocess.connector(comicAddress, SELETIVE_DOWNLOAD, in);
+				preprocess.connector(comicAddress, SELECTIVE_DOWNLOAD, in);
 				preprocess.close();
 				break;
 				
@@ -234,3 +234,7 @@ public class UI implements DownloadMod {
 		instance = null;
 	}
 }
+/*
+변경사항
+1. 오타 수정
+*/
