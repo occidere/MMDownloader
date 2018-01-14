@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 
 import common.DownloadMod;
 import common.ErrorHandling;
+import common.InputCheck;
 import downloader.Preprocess;
 import sys.SystemInfo;
 import sys.Configuration;
@@ -35,24 +36,41 @@ public class UI implements DownloadMod {
 	public void showMenu() throws Exception {
 		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		Preprocess preprocess = Preprocess.getInstance();
-		String comicAddress;
+		String comicAddress, input;
 		int menuNum = Integer.MAX_VALUE;
 
 		while (menuNum != EXIT) {
 			printMenu(); //메뉴 출력
-			menuNum = Integer.parseInt(in.readLine());
+			input = in.readLine();
+			if(InputCheck.isValid(input, InputCheck.ONLY_NUMBER) == false) {
+				ErrorHandling.printError("잘못된 입력값입니다.", false);
+				continue;
+			}
+			menuNum = Integer.parseInt(input);
 
 			switch (menuNum) {
 			case 1: //일반 다운로드
 				System.out.print("주소를 입력하세요: ");
+				
 				comicAddress = in.readLine().trim();
+				if(InputCheck.isValid(comicAddress, InputCheck.IS_HTTP_URL) == false) {
+					ErrorHandling.printError("잘못된 입력값입니다.", false);
+					continue;
+				}
+				
 				preprocess.connector(comicAddress, ALL_DOWNLOAD, in);
 				preprocess.close();
 				break;
 
 			case 2: //선택적 다운로드
 				System.out.print("전체보기 주소를 입력하세요: ");
+				
 				comicAddress = in.readLine().trim();
+				if(InputCheck.isValid(comicAddress, InputCheck.IS_HTTP_URL) == false) {
+					ErrorHandling.printError("잘못된 입력값입니다.", false);
+					continue;
+				}
+				
 				preprocess.connector(comicAddress, SELECTIVE_DOWNLOAD, in);
 				preprocess.close();
 				break;
@@ -68,7 +86,13 @@ public class UI implements DownloadMod {
 				
 			case 8: //환경설정
 				printSettingMenu();
-				menuNum = Integer.parseInt(in.readLine().trim());
+				
+				input = in.readLine().trim();
+				if(InputCheck.isValid(input, InputCheck.ONLY_NUMBER) == false) {
+					ErrorHandling.printError("잘못된 입력값입니다.", false);
+					continue;
+				}
+				menuNum = Integer.parseInt(input);
 				
 				/* 환경설정 메뉴 */
 				switch(menuNum){
@@ -237,4 +261,5 @@ public class UI implements DownloadMod {
 /*
 변경사항
 1. 오타 수정
+2. 입력 부분 정규식 검증 추가
 */
