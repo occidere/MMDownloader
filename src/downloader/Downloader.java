@@ -27,6 +27,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 
@@ -49,7 +50,7 @@ public class Downloader {
 	private final String DOMAIN = "http://wasabisyrup.com";
 	
 	final int BUF_SIZE = 1048576;
-	final int MAX_WAIT_TIME = 60000; //최대 대기시간 1분
+	final int MAX_WAIT_TIME = 30000; //최대 대기시간 30초
 	
 	/**
 	 * 선택된 페이지들만 다운로드
@@ -209,7 +210,7 @@ public class Downloader {
 			pageSource = getHtmlPageJsoup(eachArchiveAddress);
 		}
 		catch(Exception e) {
-			ErrorHandling.saveErrLog("Jsoup 파싱 실패", eachArchiveAddress, e); 
+			ErrorHandling.saveErrLog("Jsoup 파싱 실패", eachArchiveAddress, e);
 		}
 		
 		try { //실패시 null이 담겨있고, HtmlUnit이용해 일반 파싱 재시도
@@ -222,7 +223,7 @@ public class Downloader {
 		
 		//Jsoup과 HtmlUnit 모두 파싱 실패시 에러메세지 출력
 		if(pageSource == null){
-			throw new Exception("Page Parsing Failed");
+			throw new Exception("All Page Parsing Failed");
 		}
 		
 		return pageSource; //아카이브 페이지를 파싱한 결과 리턴
@@ -244,6 +245,7 @@ public class Downloader {
 			.userAgent(UserAgent.getUserAgent())
 			.header("charset", "utf-8")
 			.header("Accept-Encoding", "gzip") //20171126 gzip 추가
+			.timeout(MAX_WAIT_TIME) // timeout
 			.data("pass", PASSWORD)
 			.followRedirects(true)
 			.execute();
@@ -252,7 +254,7 @@ public class Downloader {
 			
 		// <div class="gallery-template">이 만화 담긴 곳.
 		if(preDoc.select("div.gallery-template").isEmpty()) {
-			throw new Exception("Jsoup Parsing Failed");
+			throw new Exception("Jsoup Parsing Failed: No tag found");
 		}
 		else { // 만약 Jsoup 파싱 시 내용 있으면 성공
 			pageSource = preDoc.toString();
@@ -350,11 +352,12 @@ public class Downloader {
 	/**
 	 * 이미지 주소에서 마지막 {@code . }을 기준으로 확장자 추출(없다면 jpg로 디폴트)
 	 * @param imgUrl 이미지 주소
+	 * @param def 확장자를 찾지 못했을 경우 적용할 기본 확장자
 	 * @return {@code . }을 포함한 확장자
 	 */
-	private String getExt(String imgUrl){
+	private String getExt(String imgUrl, String def){
 		int lastIndexOfDot = imgUrl.lastIndexOf(".");
-		String ext = lastIndexOfDot == -1 ? ".jpg" : imgUrl.substring(lastIndexOfDot);
+		String ext = lastIndexOfDot == -1 ? def : imgUrl.substring(lastIndexOfDot);
 		return ext;
 	}
 	
@@ -398,6 +401,11 @@ public class Downloader {
 				}
 				System.out.println();
 			}
+			catch(SocketTimeoutException timeoutException) {
+				// 서버와 연결이 안 좋을 때 hang 방지
+				ErrorHandling.saveErrLog(String.format("%s_%03d", subFolder, pageNum), 
+						"마루마루 서버와의 연결이 원활하지 않습니다.", timeoutException);
+			}
 			catch(Exception e) {
 				//다운로드 중 에러 발생시 에러 로그를 txt형태로 저장
 				ErrorHandling.saveErrLog(String.format("%s_%03d", subFolder, pageNum), "", e);
@@ -414,7 +422,8 @@ public class Downloader {
 		private int download() throws Exception {
 			HttpURLConnection conn = (HttpURLConnection)new URL(imgURL).openConnection();
 			conn.setRequestMethod("GET");
-			conn.setConnectTimeout(MAX_WAIT_TIME);
+			conn.setConnectTimeout(MAX_WAIT_TIME); // init 연결 타임아웃
+			conn.setConnectTimeout(MAX_WAIT_TIME << 1); // data read 타임아웃
 			conn.setRequestProperty("charset", "utf-8");
 			conn.setRequestProperty("User-Agent", UserAgent.getUserAgent());
 			//conn.setRequestProperty("Accept-Encoding", "gzip");
@@ -422,7 +431,7 @@ public class Downloader {
 			int len, imageSize = conn.getContentLength(); // byte size
 			InputStream inputStream = conn.getInputStream(); //속도저하의 원인
 			
-			String savePath = String.format("%s%03d%s", path, pageNum, getExt(imgURL));
+			String savePath = String.format("%s%03d%s", path, pageNum, getExt(imgURL, ".jpg"));
 
 			BufferedInputStream bis = new BufferedInputStream(inputStream, BUF_SIZE);
 			BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(savePath), BUF_SIZE);
@@ -445,4 +454,6 @@ public class Downloader {
 /*
 변경사항
 스레드 개수가 전체 페이지 수를 넘지 않게 조정
+readTime 설정
+확장자 파싱메서드 default 매개변수 추가
 */
