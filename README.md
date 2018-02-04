@@ -1,5 +1,5 @@
 # MMDownloader
-[![Latest](https://img.shields.io/badge/Latest-v0.5.0.6-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.2)
+[![Latest](https://img.shields.io/badge/Latest-v0.5.0.6-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.6)
 ![Downloads](https://img.shields.io/github/downloads/occidere/MMDownloader/total.svg)
 [![Java Version](https://img.shields.io/badge/Java-1.8-red.svg)](https://www.java.com/ko/)
 [![GitHub license](https://img.shields.io/github/license/occidere/MMDownloader.svg)](https://github.com/occidere/MMDownloader/blob/master/LICENSE)
@@ -8,7 +8,7 @@
 
 ### 사용법(Gitbook): https://occidere.gitbooks.io/mmdownloader/content/
 
-### 다운로드: [Release](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.2)
+### 다운로드: [Release](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.6)
 
 ### 주의사항
 * 해당 프로그램은 HtmlUnit과 Jsoup 라이브러리를 사용하였으며, Apache License 2.0을 따르고 있습니다.
