@@ -58,7 +58,7 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.5.0.6"; //프로그램 버전
+	private static final String VERSION = "0.0.0.6"; //프로그램 버전
 	private static final String UPDATED_DATE = "2017.02.04"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
@@ -135,9 +135,6 @@ public class SystemInfo {
 	private static void downloadLatestVersion(final BufferedReader in){
 		try{
 			final int BUF_SIZE = 10485760;
-			//다운받은 바이트 길이, MB로 나누기 위한 값, 직전 다운로드 MB 값
-			int len = 0, MB = 1024*1024, preDownloadedMB = 0;
-			double accumSize = 0, totalSize = 0;//누적 다운로드 바이트, 총 파일 크기 바이트
 			
 			String select, fileName = null, fileURL = null;
 			boolean isCorrectlySelected = false;
@@ -161,32 +158,20 @@ public class SystemInfo {
 						fileURL = LATEST_OTHERS;
 					}
 					
-					System.out.println("다운로드중 ...");
-					System.out.println("저장 위치: "+DEFAULT_PATH+fileSeparator+fileName);
-					
 					BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(DEFAULT_PATH+fileSeparator+fileName), BUF_SIZE);
 					HttpURLConnection conn = (HttpURLConnection)new URL(fileURL).openConnection();
 					conn.setConnectTimeout(30000); // 타임아웃 30초 
 					conn.setReadTimeout(60000); // 타임아웃 1분
 					BufferedInputStream bis = new BufferedInputStream(conn.getInputStream(), BUF_SIZE);
 					
-					totalSize = (double)conn.getContentLength() / MB; //KB
-					
+					System.out.print("다운로드중 ... ");
+					int len = 0;
 					while((len = bis.read()) != -1){
 						bos.write(len);
-						accumSize += (double)len / MB;
-						
-						if(preDownloadedMB < (int)accumSize){ //MB단위로만 로그 출력
-							System.out.printf("%5.2fMB / %5.2fMB ... 완료!\n", accumSize, totalSize);
-							preDownloadedMB = (int)accumSize;
-						}
 					}
 					bos.close();
 					bis.close();
-					
-					//마지막 로그 출력
-					System.out.printf("%5.2fMB / %5.2fMB ... 완료!\n", accumSize, totalSize);
-					System.out.println("최신버전 다운로드 완료! (위치: "+SystemInfo.DEFAULT_PATH+")");
+					System.out.println("완료! (위치: "+DEFAULT_PATH+fileSeparator+fileName+")");
 				}
 				else if(select.equalsIgnoreCase("n")){
 					isCorrectlySelected = true;
