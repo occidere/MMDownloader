@@ -58,8 +58,8 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.5.0.4"; //프로그램 버전
-	private static final String UPDATED_DATE = "2017.01.14"; //업데이트 날짜
+	private static final String VERSION = "0.5.0.6"; //프로그램 버전
+	private static final String UPDATED_DATE = "2017.02.04"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
@@ -166,7 +166,8 @@ public class SystemInfo {
 					
 					BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(DEFAULT_PATH+fileSeparator+fileName), BUF_SIZE);
 					HttpURLConnection conn = (HttpURLConnection)new URL(fileURL).openConnection();
-					conn.setConnectTimeout(60000); // 타임아웃 1분 요청
+					conn.setConnectTimeout(30000); // 타임아웃 30초 
+					conn.setReadTimeout(60000); // 타임아웃 1분
 					BufferedInputStream bis = new BufferedInputStream(conn.getInputStream(), BUF_SIZE);
 					
 					totalSize = (double)conn.getContentLength() / MB; //KB
@@ -331,13 +332,18 @@ public class SystemInfo {
 		+ "  5) 멀티스레딩 다운로드\n"
 		+ "   - 다운로드 시 멀티스레딩의 정도를 설정합니다.\n"
 		+ "   - 대체로 값이 커질수록 성능은 좋아지나 메모리 사용량이 증가합니다.\n"
-		+ "     0: 멀티스레딩을 하지 않습니다 (초저성능)\n"
-		+ "     1: 코어 개수의 절반 만큼을 할당합니다 (저성능)\n"
-		+ "     2: 코어 개수 만큼을 할당합니다 (기본값, 권장)\n"
-		+ "     3: 코어 개수의 2배 만큼을 할당합니다 (고성능)\n"
-		+ "     4: 사용할 수 있는 최대한 할당합니다 (초고성능)\n"
+		+ "    -- 0: 멀티스레딩을 하지 않습니다 (초저성능)\n"
+		+ "    -- 1: 코어 개수의 절반 만큼을 할당합니다 (저성능)\n"
+		+ "    -- 2: 코어 개수 만큼을 할당합니다 (기본값, 권장)\n"
+		+ "    -- 3: 코어 개수의 2배 만큼을 할당합니다 (고성능)\n"
+		+ "    -- 4: 사용할 수 있는 최대한 할당합니다 (초고성능)\n"
 		+ "   - 기본값: 2\n"
 		+ "\n0. 종료\n"
 		+ " - 모든 작업을 중단하고 프로그램을 종료합니다.\n"
-		+ "\n작성자: occidere\t작성일: 2017.12.20\n\n";
+		+ "\n작성자: occidere\t작성일: 2018.02.04\n\n";
 }
+/*
+변경사항
+도움말 소폭 수정
+버전 변경
+*/
