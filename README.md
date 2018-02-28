@@ -1,9 +1,9 @@
 # MMDownloader
 [![Latest](https://img.shields.io/badge/Latest-v0.5.0.6-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.6)
+[![Build Status](https://travis-ci.org/occidere/MMDownloader.svg?branch=master)](https://travis-ci.org/occidere/MMDownloader)
 ![Downloads](https://img.shields.io/github/downloads/occidere/MMDownloader/total.svg)
 [![Java Version](https://img.shields.io/badge/Java-1.8-red.svg)](https://www.java.com/ko/)
 [![GitHub license](https://img.shields.io/github/license/occidere/MMDownloader.svg)](https://github.com/occidere/MMDownloader/blob/master/LICENSE)
-[![Build Status](https://travis-ci.org/occidere/MMDownloader.svg?branch=master)](https://travis-ci.org/occidere/MMDownloader)
 
 마루마루 다운로더 신규 프로젝트
 
