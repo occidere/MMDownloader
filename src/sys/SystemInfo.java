@@ -134,7 +134,8 @@ public class SystemInfo {
 	 */
 	private static void downloadLatestVersion(final BufferedReader in){
 		try{
-			final int BUF_SIZE = 10485760;
+			final int MB = 1048576;
+			final int BUF_SIZE = MB * 10;
 			
 			String select, fileName = null, fileURL = null;
 			boolean isCorrectlySelected = false;
@@ -162,15 +163,30 @@ public class SystemInfo {
 					HttpURLConnection conn = (HttpURLConnection)new URL(fileURL).openConnection();
 					conn.setConnectTimeout(30000); // 타임아웃 30초 
 					conn.setReadTimeout(60000); // 타임아웃 1분
+					
 					BufferedInputStream bis = new BufferedInputStream(conn.getInputStream(), BUF_SIZE);
 					
-					System.out.print("다운로드중 ... ");
-					int len = 0;
-					while((len = bis.read()) != -1){
-						bos.write(len);
+					final double MB_SIZE = (double) conn.getContentLength() / MB;	// 전체 파일 사이즈의 MB 값
+					int readByte = 0;	// 읽은 바이트 값
+					int accum = 0;		// 누적 바이트 길이
+					int count = 0;		// MB 를 넘기 전 까지 읽어들인 바이트 길이
+					
+					System.out.println("다운로드중 ...");
+					
+					while((readByte = bis.read()) != -1){
+						bos.write(readByte);
+						
+						/* MB 별로 다운로드 진행 상황을 출력함 */
+						if(++count >= MB) {
+							accum += count;
+							count = 0;
+							System.out.printf("%,3.2f MB / %,3.2f MB 완료!\n", (double) accum / MB, MB_SIZE);
+						}
 					}
 					bos.close();
 					bis.close();
+					
+					System.out.printf("%,3.2f MB / %,3.2f MB 완료!\n", (double) (accum + count) / MB, MB_SIZE);
 					System.out.println("완료! (위치: "+DEFAULT_PATH+fileSeparator+fileName+")");
 				}
 				else if(select.equalsIgnoreCase("n")){
@@ -328,7 +344,6 @@ public class SystemInfo {
 		+ "\n작성자: occidere\t작성일: 2018.02.04\n\n";
 }
 /*
-변경사항
-도움말 소폭 수정
-버전 변경
+fix_update_indicator
+최신버전 업데이트 상태 표시기 수정
 */
