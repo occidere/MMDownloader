@@ -20,10 +20,10 @@ public class Configuration {
 	// 환경설정 파일 이름
 	private static final String CONF_NAME = "MMDownloader.properties";
 	// 환경설정 파일 위치: Marumaru/MMDownloader.properties로 고정
-	private static String CONF_PATH = SystemInfo.DEFAULT_PATH + SystemInfo.fileSeparator + CONF_NAME;
+	private static final String CONF_PATH = SystemInfo.DEFAULT_PATH + SystemInfo.fileSeparator + CONF_NAME;
 	
 	private static File profile = new File(CONF_PATH);
-	private static Properties prop = new Properties();
+	private static Properties props = new Properties();
 	
 	/** 
 	 * 설정파일 initialize 메서드<br>
@@ -37,11 +37,10 @@ public class Configuration {
 		}
 		
 		/***** 이 사이엔 알맞은 시스템 변수들을 설정하는 내용이 들어가야 됨 *****/
-		
-		if(prop.containsKey("PATH")==false) prop.setProperty("PATH", SystemInfo.DEFAULT_PATH);
-		if(prop.containsKey("MERGE")==false) prop.setProperty("MERGE", "false");
-		if(prop.containsKey("DEBUG")==false) prop.setProperty("DEBUG", "false");
-		if(prop.containsKey("MULTI")==false) prop.setProperty("MULTI", "2"); // MULTI = 0, 1, 2, 3, 4
+		if(props.containsKey("PATH")==false) props.setProperty("PATH", SystemInfo.DEFAULT_PATH);
+		if(props.containsKey("MERGE")==false) props.setProperty("MERGE", "false");
+		if(props.containsKey("DEBUG")==false) props.setProperty("DEBUG", "false");
+		if(props.containsKey("MULTI")==false) props.setProperty("MULTI", "2"); // MULTI = 0, 1, 2, 3, 4
 		
 		/************************************************************************/
 		
@@ -58,7 +57,7 @@ public class Configuration {
 	 */
 	public static void loadProperty() throws Exception {
 		createDefaultFiles();
-		prop.load(new BufferedInputStream(new FileInputStream(profile)));
+		props.load(new BufferedInputStream(new FileInputStream(profile)));
 	}
 
 	/**
@@ -67,20 +66,21 @@ public class Configuration {
 	 */
 	public static void storeProperty() throws Exception {
 		createDefaultFiles();
-		prop.store(new BufferedOutputStream(new FileOutputStream(profile)), "");
+		props.store(new BufferedOutputStream(new FileOutputStream(profile)), "");
 	}
 	
 	/**
 	 * 외부 class에 존재하는 프로퍼티 필드들에 대해 
 	 * 새로 부여한 설정값을 적용하는 메서드(Reflection 이용)
+	 * 0.5.0.8 기준 PATH 변수만 적용 중
 	 * <li> 대상: SystemInfo(PATH) </li>
 	 */
 	private static void applyProperty() {
 		Arrays.stream(SystemInfo.class.getDeclaredFields()) // SystemInfo 클래스의 모든 필드들을 불러옴
-			.filter(f-> prop.containsKey(f.getName())) // 프로퍼티에 존재하는 필드들만 걸러냄
+			.filter(f-> props.containsKey(f.getName())) // 프로퍼티에 존재하는 필드들만 걸러냄
 			.forEach(f-> {
 				try { // 변수명에 맞는 이름을 찾아서 설정 적용
-					f.set(SystemInfo.class, prop.getProperty(f.getName()));
+					f.set(SystemInfo.class, props.getProperty(f.getName()));
 				}
 				catch (Exception e) {
 					ErrorHandling.saveErrLog("설정값 적용 실패: "+f.getName(), f.toString(), e);
@@ -109,45 +109,45 @@ public class Configuration {
 			profile = new File(CONF_PATH);
 			profile.createNewFile();
 		}
-		if(prop == null) prop = new Properties();
+		if(props == null) props = new Properties();
 	}
 	
 	public static void setProperty(String key, String value) {
-		prop.setProperty(key, value);
+		props.setProperty(key, value);
 	}
 	
 	public static short getShort(String name, short def) {
-		String tmp = prop.getProperty(name);
+		String tmp = props.getProperty(name);
 		return tmp == null ? def : Short.parseShort(tmp);
 	}
 	
 	public static short getByte(String name, byte def) {
-		String tmp = prop.getProperty(name);
+		String tmp = props.getProperty(name);
 		return tmp == null ? def : Byte.parseByte(tmp);
 	}
 	
 	public static int getInt(String name, int def) {
-		String tmp = prop.getProperty(name);
+		String tmp = props.getProperty(name);
 		return tmp == null ? def : Integer.parseInt(tmp);
 	}
 
 	public static float getFloat(String name, float def) {
-		String tmp = prop.getProperty(name);
+		String tmp = props.getProperty(name);
 		return tmp == null ? def : Float.parseFloat(tmp);
 	}
 	
 	public static double getDouble(String name, double def) {
-		String tmp = prop.getProperty(name);
+		String tmp = props.getProperty(name);
 		return tmp == null ? def : Double.parseDouble(tmp);
 	}
 	
 	public static String getString(String name, String def) {
-		String tmp = prop.getProperty(name);
+		String tmp = props.getProperty(name);
 		return tmp == null ? def : tmp;
 	}
 	
 	public static boolean getBoolean(String name, boolean def) {
-		String tmp = prop.getProperty(name);
+		String tmp = props.getProperty(name);
 		return tmp == null ? def : Boolean.parseBoolean(tmp);
 	}
 	
