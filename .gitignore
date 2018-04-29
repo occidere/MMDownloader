@@ -4,3 +4,7 @@ bin
 .prefs
 .project
 target
+
+# IntelliJ config
+*.iml
+*.idea
