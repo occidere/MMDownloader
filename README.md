@@ -1,5 +1,5 @@
 # MMDownloader
-[![Latest](https://img.shields.io/badge/Latest-v0.5.0.6-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.6)
+[![Latest](https://img.shields.io/badge/Latest-v0.5.0.8-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.8)
 [![Build Status](https://travis-ci.org/occidere/MMDownloader.svg?branch=master)](https://travis-ci.org/occidere/MMDownloader)
 ![Downloads](https://img.shields.io/github/downloads/occidere/MMDownloader/total.svg)
 [![Java Version](https://img.shields.io/badge/Java-1.8-red.svg)](https://www.java.com/ko/)
@@ -9,7 +9,7 @@
 
 ### 사용법(Gitbook): https://occidere.gitbooks.io/mmdownloader/content/
 
-### 다운로드: [Release](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.6)
+### 다운로드: [Release](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.8)
 
 ### 주의사항
 * 해당 프로그램은 HtmlUnit과 Jsoup 라이브러리를 사용하였으며, Apache License 2.0을 따르고 있습니다.
@@ -18,23 +18,27 @@
 * 해외에서 접속 시 403 에러가 발생할 수 있습니다. **해외에선 VPN 사용을 권장**합니다.
 * 해당 프로그램 및 소스코드는 개인적인 자바 공부를 위하여 작성되었습니다.
 * 저작권법을 준수하여야 합니다.
-* 다운로드 받은 웹툰은 개인 소장용도로만 이용하여야 하고, 재배포, 판매 등의 행위를 하면 안됩니다.
+* 다운로드 받은 만화는 개인 소장용도로만 이용하여야 하고, 재배포, 판매 등의 행위를 하면 안됩니다.
 * 해당 소스코드나 프로그램을 악용하여 발생하는 상황에 대해 어떠한 책임도 지지 않습니다.
 * 지원되는 플랫폼: Windows, MAC OS X(beta), Linux 입니다.
 
 ### 사용 방법
-* 기존 wasabisyrup 등이 들어간 아카이브 주소만 다운로드 되던 것을 "아무 주소"나 넣어도 다운로드가 가능하게 개선하였습니다.
 * 다운로드 경로는 (Windows= C:\Users\사용자\Marumaru) (Linux, MAX OS X= /home/사용자/Marumaru/) 입니다.
 * 윈도우의 경우 exe파일을 실행시키면 되고, MAC OS X, 리눅스의 경우 java -jar MMDownloader.jar 을 통해 실행시키면 됩니다.
 * 리눅스의 경우 nautilus등의 GUI가 지원되어야 폴더열기, 마루마루 사이트 열기 등을 정상적으로 사용할 수 있습니다.
 * MAC OS X의 경우 개발자가 맥북이 없어서 테스트가 원할하지 않아 베타 버전 정도로만 생각해주시면 됩니다.
+* 자세한 내용은 [여기](https://occidere.gitbooks.io/mmdownloader/content/)를 참고해 주시길 바랍니다.
 
 ### 작동과정 중 유의사항
-* Jsoup을 이용하여 고속 파싱 시도를 하여 다운로드를 진행합니다. 성공시 평균 1분 이내에 다운로드가 완료됩니다.
+* Jsoup을 이용하여 고속 파싱 시도를 하여 다운로드를 진행합니다.
 * 만일 고속 파싱에 실패하면, HtmlUnit을 이용하여 자바스크립트를 포함하여 페이지를 유닛테스트 개념으로 읽어들인 뒤, 이미지를 다운로드 합니다. 초기 자바스크립트 파싱 과정(=이미지 추출과정)에서 시간이 다소 소요될 수 있습니다.
-* 다운로드 속도는 한 편당 최대 5분까지 소요되며, 이는 마루마루 서버 상태와 PC의 네트워크 속도에 제일 큰 영향을 받습니다.
+* 다운로드 속도는 마루마루 서버 상태와 PC의 네트워크 속도에 제일 큰 영향을 받습니다.
 
 ### 업데이트 내역
+--- ver 0.5.0.8 ---
+ * 최신버전 업데이트 상황 표시기 수정 완료
+ * 만화 URL에 ASCII 이외 값이 포함된 경우 다운로드가 제대로 되지 않던 문제 해결
+
 --- ver 0.5.0.6 ---
  * timeout 설정하여 다운로드 시 hang 문제 처리
  * maven project로 변경
