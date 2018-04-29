@@ -3,7 +3,7 @@ package downloader;
 import java.util.List;
 
 /**
- * 만화 아카이브 주소 파싱 시 "아카이브 주소"와, "주소" 등의 정보를 모아놓은 클래스.
+ * 만화 아카이브 주소 파싱 시 "아카이브 주소"와, "주소" 등의 정보를 모아놓은 Bean.
  * 현재 최소 경량화 상태
  * @author occidere
  */
