@@ -8,3 +8,5 @@ target
 # IntelliJ config
 *.iml
 *.idea
+*classes
+**/META-INF
