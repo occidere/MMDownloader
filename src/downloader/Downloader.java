@@ -246,7 +246,7 @@ public class Downloader {
 			.header("charset", "utf-8")
 			.header("Accept-Encoding", "gzip") //20171126 gzip 추가
 			.timeout(MAX_WAIT_TIME) // timeout
-			.data("pass", PASSWORD)
+			.data("pass", PASSWORD)	// 20180429 기준 마루마루에서 reCaptcha를 사용하기에 의미없음
 			.followRedirects(true)
 			.execute();
 		
@@ -303,7 +303,7 @@ public class Downloader {
 	 * @param url 이미지 URL
 	 * @return UTF-8 형식의 이미지 URL
 	 */
-	private String encoding(String url){
+	private static String encoding(String url){
 		final StringBuilder utf8 = new StringBuilder(url.length() << 1);
 		
 		url.chars().forEach(x-> {
@@ -329,7 +329,7 @@ public class Downloader {
 	 * @param rawText 특수문자가 포함된 스트링
 	 * @return 특수문자가 제거된 스트링
 	 */
-	private String removeSpecialCharacter(String rawText){
+	private static String removeSpecialCharacter(String rawText){
 		return rawText.replaceAll("[\\\\/:*?<>|.]", " ").replaceAll("[\"]", "'").trim();
 	}
 	
@@ -340,7 +340,7 @@ public class Downloader {
 	 * @param milliElapsed 다운로드에 걸린 시간(밀리초)
 	 * @return 다운로드 속도의 스트링 포맷
 	 */
-	private String getStrSpeed(long byteSize, long milliElapsed) {
+	private static String getStrSpeed(long byteSize, long milliElapsed) {
 		String unit[] = { "B", "KB", "MB", "GB", "TB" };
 		if(milliElapsed == 0) milliElapsed = 1;
 		double spd = (byteSize*1000 / milliElapsed);
@@ -355,7 +355,7 @@ public class Downloader {
 	 * @param def 확장자를 찾지 못했을 경우 적용할 기본 확장자
 	 * @return {@code . }을 포함한 확장자
 	 */
-	private String getExt(String imgUrl, String def){
+	private static String getExt(String imgUrl, String def){
 		int lastIndexOfDot = imgUrl.lastIndexOf(".");
 		String ext = lastIndexOfDot == -1 ? def : imgUrl.substring(lastIndexOfDot);
 		return ext;
@@ -451,9 +451,3 @@ public class Downloader {
 		}
 	}
 }
-/*
-변경사항
-스레드 개수가 전체 페이지 수를 넘지 않게 조정
-readTime 설정
-확장자 파싱메서드 default 매개변수 추가
-*/
