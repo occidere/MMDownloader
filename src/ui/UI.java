@@ -118,8 +118,12 @@ public class UI implements DownloadMod {
 				case 5: //멀티스레딩 모드
 					multiThreadMode(in);
 					break;
+
+				case 6: //강제 다운로드 설정
+					ignoreDbConfig(in);
+					break;
 				}
-				
+
 				menuNum = 8; //이걸 달아줘야지 종료되는거 막을 수 있음
 				break;
 			
@@ -139,27 +143,30 @@ public class UI implements DownloadMod {
 	 * <p>UI에 보여줄 메뉴 출력 메서드
 	 */
 	private void printMenu(){
-		String menu = 
-				"메뉴를 선택하세요\n"+
-				"  1. 만화 다운로드\n"+
-				"  2. 선택적 다운로드\n"+
-				"  3. 다운로드 폴더 열기\n"+
-				"  4. 마루마루 접속\n"+
-				"  8. 환경설정\n"+
-				"  9. 도움말\n"+
-				"  0. 종료";
+		String menu = new StringBuilder()
+				.append("메뉴를 선택하세요\n")
+				.append("  1. 만화 다운로드\n")
+				.append("  2. 선택적 다운로드\n")
+				.append("  3. 다운로드 폴더 열기\n")
+				.append("  4. 마루마루 접속\n")
+				.append("  8. 환경설정\n")
+				.append("  9. 도움말\n")
+				.append("  0. 종료")
+				.toString();
 		System.out.println(menu);
 	}
 	
 	private void printSettingMenu() {
-		String settingMenu = 
-				"설정할 메뉴를 선택하세요\n"+
-				"  1. 업데이트 확인\n"+
-				"  2. 저장경로 변경\n"+
-				"  3. 이미지 병합 설정\n"+
-				"  4. 디버깅 모드 설정\n"+
-				"  5. 멀티스레딩 설정\n"+
-				"  9. 뒤로";
+		String settingMenu = new StringBuilder()
+				.append("설정할 메뉴를 선택하세요\n")
+				.append("  1. 업데이트 확인\n")
+				.append("  2. 저장경로 변경\n")
+				.append("  3. 이미지 병합 설정\n")
+				.append("  4. 디버깅 모드 설정\n")
+				.append("  5. 멀티스레딩 설정\n")
+				.append("  6. 강제 다운로드 설정\n")
+				.append("  9. 뒤로")
+				.toString();
 		System.out.println(settingMenu);
 	}
 	
@@ -252,6 +259,25 @@ public class UI implements DownloadMod {
 		}
 		
 		Configuration.setProperty("MULTI", input);
+		Configuration.refresh();
+		System.out.println("변경 완료");
+	}
+
+	/**
+	 * 메뉴 8-6 DB 무시 후 강제 다운로드 설정
+	 */
+	public void ignoreDbConfig(final BufferedReader in) throws Exception {
+		boolean ignoreDb = Configuration.getBoolean("IGNORE_DB", false);
+		System.out.printf("이미 다운받은 만화도 DB 기록을 무시하고 강제로 다운로드를 진행합니다. (현재: %s)\n", ignoreDb);
+		System.out.print("값 입력(true or false): ");
+
+		String input = in.readLine().toLowerCase();
+		if(!input.equals("true") && !input.equals("false")) {
+			ErrorHandling.printError("잘못된 값입니다.", false);
+			return;
+		}
+
+		Configuration.setProperty("IGNORE_DB", input);
 		Configuration.refresh();
 		System.out.println("변경 완료");
 	}
