@@ -76,6 +76,16 @@ public class Database {
     }
 
     /**
+     * {@comicId}값으로 저장된 만화의 제목을 가져온다.
+     * 저장 내역이 없을 시 공백("")을 반환한다.
+     * @param comicId 만화 제목을 추출할 만화의 id
+     * @return 추출된 만화의 article-title(원피스 25화 등)
+     */
+    public static String getComicTitle(String comicId) {
+        return database.getOrDefault(comicId, "");
+    }
+
+    /**
      * 만회의 id를 기준으로 다운로드 기록을 삭제한다.
      * id가 있어서 삭제에 성공하면 true, 없거나 실패 시 false
      * @param comicId 기록을 삭제할 만회의 id
