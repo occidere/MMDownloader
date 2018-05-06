@@ -1,5 +1,6 @@
 # MMDownloader
 [![Latest](https://img.shields.io/badge/Latest-v0.5.0.8-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.8)
+[![Beta](https://img.shields.io/badge/Latest-v0.5.1.0-orange.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.1.0)
 [![Build Status](https://travis-ci.org/occidere/MMDownloader.svg?branch=master)](https://travis-ci.org/occidere/MMDownloader)
 ![Downloads](https://img.shields.io/github/downloads/occidere/MMDownloader/total.svg)
 [![Java Version](https://img.shields.io/badge/Java-1.8-red.svg)](https://www.java.com/ko/)
@@ -35,6 +36,11 @@
 * 다운로드 속도는 마루마루 서버 상태와 PC의 네트워크 속도에 제일 큰 영향을 받습니다.
 
 ### 업데이트 내역
+--- ver 0.5.1.0 ---
+ * [Beta] 파일 DB 설계 및 추가
+ * [Beta] DB에 저장된 다운로드 기록을 무시하고 다시 다운로드 받을지 여부 설정 추가
+   * 기본적으로 이미 다운받은 만화는 다시 다운받지 않는다. (IGNORE_DB = false)
+
 --- ver 0.5.0.8 ---
  * 최신버전 업데이트 상황 표시기 수정 완료
  * 만화 URL에 ASCII 이외 값이 포함된 경우 다운로드가 제대로 되지 않던 문제 해결
