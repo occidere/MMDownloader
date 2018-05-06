@@ -1,6 +1,6 @@
 # MMDownloader
 [![Latest](https://img.shields.io/badge/Latest-v0.5.0.8-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.8)
-[![Beta](https://img.shields.io/badge/Latest-v0.5.1.0-orange.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.1.0)
+[![Beta](https://img.shields.io/badge/Beta-v0.5.1.0-orange.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.1.0)
 [![Build Status](https://travis-ci.org/occidere/MMDownloader.svg?branch=master)](https://travis-ci.org/occidere/MMDownloader)
 ![Downloads](https://img.shields.io/github/downloads/occidere/MMDownloader/total.svg)
 [![Java Version](https://img.shields.io/badge/Java-1.8-red.svg)](https://www.java.com/ko/)
