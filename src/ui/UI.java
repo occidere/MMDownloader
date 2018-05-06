@@ -8,6 +8,7 @@ import common.DownloadMod;
 import common.ErrorHandling;
 import common.InputCheck;
 import downloader.Preprocess;
+import sys.Database;
 import sys.SystemInfo;
 import sys.Configuration;
 
@@ -18,6 +19,7 @@ public class UI implements DownloadMod {
 		SystemInfo.makeDir(); //시작과 동시에 디폴트 폴더 생성.
 		SystemInfo.makeDir(SystemInfo.PATH); //시작과 동시에 사용자 지정 다운로드 폴더 생성
 		Configuration.init(); //설정파일(MMDownloader.properties 읽기 & 적용 & 저장) 수행
+		Database.initDatabase(); // Database 객체 초기화
 
 		SystemInfo.printProgramInfo();//버전 출력
 	}
@@ -254,12 +256,8 @@ public class UI implements DownloadMod {
 		System.out.println("변경 완료");
 	}
 	
-	public void close(){
+	public void close() {
+		Database.close(); // Database 객체 close
 		instance = null;
 	}
 }
-/*
-변경사항
-1. 오타 수정
-2. 입력 부분 정규식 검증 추가
-*/
