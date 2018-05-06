@@ -8,6 +8,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 import common.ErrorHandling;
 import sys.Configuration;
+import sys.Database;
 import sys.SystemInfo;
 import util.ImageMerge;
 import util.UserAgent;
@@ -84,22 +85,27 @@ public class Downloader {
 		//아카이브 리스트에 담긴 개수 출력
 		System.out.printf("총 %d개\n", archiveAddress.size());
 		
-		String path = "", subFolder = ""; //subFolder = 원피스 3화
+		String path = "";
+		String subFolder = ""; //subFolder = 원피스 3화
+		String archiveId = ""; //db 기록용으로 사용할 id값. (archives/... 에서 ...에 해당)
 		
 		// http://www.shencomics.com/archives/533456와 같은 아카이브 주소
-		for(Comic comic : archiveAddress){
+		for(Comic comic : archiveAddress) {
 			System.out.println("다운로드 시도중...");
 			
 			// 아카이브주소를 바탕으로 이미지 URL 파싱해 comic객체 내부에 저장
-			if(parseImageURL(comic) == false){
+			if(parseImageURL(comic) == false) {
 				//페이지 파싱 실패 -> 건너뛰고 다음 주소 시도
 				continue;
 			}
 			
 			// 아카이브주소에서 파싱한 이미지들의 URL이 담긴 리스트
 			List<String> imgList = comic.getImgURL();
-			subFolder = (comic.getTitle()+" "+comic.getTitleNo()).trim();
-			
+			// 회차까지 포함한 제목 추출 ex) 원피스 25화
+			subFolder = (comic.getTitle() + " " + comic.getTitleNo()).trim();
+			// DB 기록에 사용할 아카이브 id 추출
+			archiveId = parseArchiveId(comic.getAddress());
+
 			/* 저장경로 = "기본경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\" 또는,
 			 * 저장경로 = "사용자 설정 경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\" */
 			path = String.format("%s/%s/%s/", SystemInfo.PATH, comic.getTitle(), subFolder);
@@ -114,9 +120,10 @@ public class Downloader {
 			
 			Worker workers[] = new Worker[numberOfPages]; // 다운로드용 inner class 객체
 			// 다운로드 필수 정보들 주입
-			for(String imgURL : imgList)
+			for(String imgURL : imgList) {
 				workers[pageNum] = new Worker(imgURL, path, subFolder, ++pageNum, numberOfPages);
-			
+			}
+
 			// 사용가능한 코어 수. 최소 1개는 보장
 			final int CORE_COUNT = Math.max(1, Runtime.getRuntime().availableProcessors());
 			int numberOfThreads, multi = Configuration.getInt("MULTI", 2); // value of MULTI property
@@ -144,6 +151,11 @@ public class Downloader {
 				pool.submit(()->{
 					downloadStream.forEach(w-> w.run()); // start() -> run()
 				}).get(); // Blocking until finished (= Join)
+
+				/* 한 만화의 모든 이미지가 이상없이 다운로드 성공하면 DB에 기록 */
+				Database.upsert(archiveId, subFolder);
+				/** 테스트 출력 **/
+				System.out.println(Database.getDatabaseToString());
 			}
 			catch (Exception e) {
 				ErrorHandling.saveErrLog("다운로드 실패", "제목: "+subFolder, e);
@@ -296,7 +308,25 @@ public class Downloader {
 		System.out.println("성공");
 		return pageSource;
 	}
-	
+
+	/**
+	 * DB에 저장하기 위해 Archive 주소에서 Archive ID를 추출한다.
+	 * 실패 시 ArchiveIdParseException이 리턴된다.
+	 * ex) wasabisyrup.com/archives/Qen_ew8cyGg -> Qen_ew8cyGg
+	 * @param archiveAdderess 추출 대상 아카이브 주소
+	 * @return 추출된 Archive ID
+	 */
+	private static String parseArchiveId(String archiveAdderess) {
+		try {
+			String prefix = "archives/";
+			int sIdx = archiveAdderess.indexOf(prefix) + prefix.length();
+			return archiveAdderess.substring(sIdx);
+		} catch (Exception e) {
+			ErrorHandling.printError("Archive ID 파싱 에러", false);
+			return "ArchiveIdParseException";	// 아카이브 id 파싱 실패 시
+		}
+	}
+
 	/**
 	 * 이미지 URL에 영어 이외의 문자(ascii값이 256 이상)가 포함된 경우
 	 * UTF-8로 인코딩 시켜주는 메서드
