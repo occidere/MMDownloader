@@ -87,6 +87,15 @@ public class Database {
     }
 
     /**
+     * 만화 id를 기준으로 다운로드 받은 적이 있는지를 확인한다.
+     * @param comicId 다운기록을 조회할 만화의 아카이브 id
+     * @return DB에 기록이 되어 있으면 true, 없으면 false
+     */
+    public static boolean contains(String comicId) {
+        return database.containsKey(comicId);
+    }
+
+    /**
      * 현재 db의 다운로드 기록 데이터의 개수를 반환
      * @return 기록된 다운로드 데이터의 개수
      */
