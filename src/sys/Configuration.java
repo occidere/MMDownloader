@@ -32,7 +32,7 @@ public class Configuration {
 	public static void init() {
 		/* 시작과 동시에 설정파일(MMDownloader.properties) 읽어들여 적용 */
 		try { loadProperty(); }
-		catch(Exception e) { 
+		catch(Exception e) {
 			ErrorHandling.saveErrLog("설정파일 읽기 실패", "", e);
 		}
 		
@@ -41,6 +41,7 @@ public class Configuration {
 		if(props.containsKey("MERGE")==false) props.setProperty("MERGE", "false");
 		if(props.containsKey("DEBUG")==false) props.setProperty("DEBUG", "false");
 		if(props.containsKey("MULTI")==false) props.setProperty("MULTI", "2"); // MULTI = 0, 1, 2, 3, 4
+		if(props.contains("IGNORE_DB")==false) props.setProperty("IGNORE_DB", "false");
 		
 		/************************************************************************/
 		
