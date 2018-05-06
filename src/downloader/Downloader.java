@@ -108,7 +108,9 @@ public class Downloader {
 
 			/* 이미 다운받은 적이 있으면서 IGNORE_DB가 false 이면 다음 만화 다운 시도로 넘어간다. */
 			if(Database.contains(archiveId)==true && Configuration.getBoolean("IGNORE_DB", false)==false) {
-				ErrorHandling.printError("이미 다운받은 기록이 있으므로 다운로드 시도를 중단합니다.", false);
+				ErrorHandling.printError(String.format("%s (%s)",
+						"이미 다운받은 기록이 있으므로 다운로드 시도를 중단합니다.",
+						Database.getComicTitle(archiveId)), false);
 				continue;
 			}
 
