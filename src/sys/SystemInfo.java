@@ -80,10 +80,11 @@ public class SystemInfo {
 		System.out.print(DEVELOPER+"\t");
 		System.out.println(VERSION_INFO);
 		System.out.println("저장경로: "+Configuration.getString("PATH", DEFAULT_PATH));
-		System.out.printf("(이미지 병합: %s, 디버깅 모드: %s, 멀티스레딩: %d)\n",
+		System.out.printf("(이미지 병합: %s, 디버깅 모드: %s, 멀티스레딩: %d, DB 무시: %s)\n",
 				Configuration.getBoolean("MERGE", false),
 				Configuration.getBoolean("DEBUG", false),
-				Configuration.getInt("MULTI", 2));
+				Configuration.getInt("MULTI", 2),
+				Configuration.getBoolean("IGNORE_DB", false));
 	}
 
 	/**
@@ -339,7 +340,10 @@ public class SystemInfo {
 		+ "    -- 3: 코어 개수의 2배 만큼을 할당합니다 (고성능)\n"
 		+ "    -- 4: 사용할 수 있는 최대한 할당합니다 (초고성능)\n"
 		+ "   - 기본값: 2\n"
+		+ "  6) 강제 다운로드\n"
+		+ "  - DB에 저장된 기록을 무시하고 이미 다운받은 만화도 강제로 다운받습니다.\n"
+		+ "  - 기본값: false\n"
 		+ "\n0. 종료\n"
 		+ " - 모든 작업을 중단하고 프로그램을 종료합니다.\n"
-		+ "\n작성자: occidere\t작성일: 2018.02.04\n\n";
+		+ "\n작성자: occidere\t작성일: 2018.05.06\n\n";
 }
