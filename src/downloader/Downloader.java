@@ -98,13 +98,19 @@ public class Downloader {
 				//페이지 파싱 실패 -> 건너뛰고 다음 주소 시도
 				continue;
 			}
-			
+
 			// 아카이브주소에서 파싱한 이미지들의 URL이 담긴 리스트
 			List<String> imgList = comic.getImgURL();
 			// 회차까지 포함한 제목 추출 ex) 원피스 25화
 			subFolder = (comic.getTitle() + " " + comic.getTitleNo()).trim();
 			// DB 기록에 사용할 아카이브 id 추출
 			archiveId = parseArchiveId(comic.getAddress());
+
+			/* 이미 다운받은 적이 있으면서 IGNORE_DB가 false 이면 다음 만화 다운 시도로 넘어간다. */
+			if(Database.contains(archiveId)==true && Configuration.getBoolean("IGNORE_DB", false)==false) {
+				ErrorHandling.printError("이미 다운받은 기록이 있으므로 다운로드 시도를 중단합니다.", false);
+				continue;
+			}
 
 			/* 저장경로 = "기본경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\" 또는,
 			 * 저장경로 = "사용자 설정 경로\제목\제목 n화\" = "C:\Marumaru\제목\제목 n화\" */
@@ -155,7 +161,7 @@ public class Downloader {
 				/* 한 만화의 모든 이미지가 이상없이 다운로드 성공하면 DB에 기록 */
 				Database.upsert(archiveId, subFolder);
 				/** 테스트 출력 **/
-				System.out.println(Database.getDatabaseToString());
+//				System.out.println(Database.getDatabaseToString());
 			}
 			catch (Exception e) {
 				ErrorHandling.saveErrLog("다운로드 실패", "제목: "+subFolder, e);
