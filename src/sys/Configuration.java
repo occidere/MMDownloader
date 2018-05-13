@@ -41,7 +41,7 @@ public class Configuration {
 		if(props.containsKey("MERGE")==false) props.setProperty("MERGE", "false");
 		if(props.containsKey("DEBUG")==false) props.setProperty("DEBUG", "false");
 		if(props.containsKey("MULTI")==false) props.setProperty("MULTI", "2"); // MULTI = 0, 1, 2, 3, 4
-		if(props.contains("IGNORE_DB")==false) props.setProperty("IGNORE_DB", "false");
+		if(props.containsKey("DB")==false) props.setProperty("DB", "true");
 		
 		/************************************************************************/
 		
