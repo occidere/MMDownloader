@@ -60,6 +60,7 @@ public class Database {
         comicTitle = comicTitle.trim();
         if(database.containsKey(comicId) == false) {
             database.put(comicId, comicTitle);
+            writeDatabase();
         }
     }
 
@@ -73,6 +74,7 @@ public class Database {
         comicId = comicId.trim();
         comicTitle = comicTitle.trim();
         database.put(comicId, comicTitle);
+        writeDatabase();
     }
 
     /**
@@ -93,7 +95,17 @@ public class Database {
      */
     public static boolean deleteById(String comicId) {
         comicId = comicId.trim();
-        return database.remove(comicId) == null ? false : true;
+        boolean result = database.remove(comicId) == null ? false : true;
+        writeDatabase();
+        return result;
+    }
+
+    /**
+     * DB에 기록된 모든 내용을 삭제한다.
+     */
+    public static void deleteAll() {
+        database = new HashMap<>();
+        writeDatabase();
     }
 
     /**
