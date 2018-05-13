@@ -19,6 +19,7 @@ public class UI implements DownloadMod {
 		SystemInfo.makeDir(); //시작과 동시에 디폴트 폴더 생성.
 		SystemInfo.makeDir(SystemInfo.PATH); //시작과 동시에 사용자 지정 다운로드 폴더 생성
 		Configuration.init(); //설정파일(MMDownloader.properties 읽기 & 적용 & 저장) 수행
+
 		Database.initDatabase(); // Database 객체 초기화
 
 		SystemInfo.printProgramInfo();//버전 출력
@@ -119,8 +120,8 @@ public class UI implements DownloadMod {
 					multiThreadMode(in);
 					break;
 
-				case 6: //강제 다운로드 설정
-					ignoreDbConfig(in);
+				case 6: // DB 관련 설정
+					dbConfig(in);
 					break;
 				}
 
@@ -164,8 +165,8 @@ public class UI implements DownloadMod {
 				.append("  3. 이미지 병합 설정\n")
 				.append("  4. 디버깅 모드 설정\n")
 				.append("  5. 멀티스레딩 설정\n")
-				.append("  6. 강제 다운로드 설정\n")
-				.append("  9. 뒤로")
+				.append("  6. DB 설정\n")
+				.append("  0. 뒤로")
 				.toString();
 		System.out.println(settingMenu);
 	}
@@ -264,11 +265,50 @@ public class UI implements DownloadMod {
 	}
 
 	/**
-	 * 메뉴 8-6 DB 무시 후 강제 다운로드 설정
+	 * 8-6 DB 설정 메뉴
+	 * @param in
+	 * @throws Exception
 	 */
-	public void ignoreDbConfig(final BufferedReader in) throws Exception {
-		boolean ignoreDb = Configuration.getBoolean("IGNORE_DB", false);
-		System.out.printf("이미 다운받은 만화도 DB 기록을 무시하고 강제로 다운로드를 진행합니다. (현재: %s)\n", ignoreDb);
+	public void dbConfig(final BufferedReader in) throws Exception {
+		System.out.println(
+				"DB 작업을 선택하세요\n" +
+				" 1. DB 동작 설정\n" +
+				" 2. DB 기록 보기\n" +
+				" 3. DB 초기화\n" +
+				" 0. 뒤로");
+
+		String input = in.readLine().trim();
+		if(InputCheck.isValid(input, InputCheck.ONLY_NUMBER) == false) {
+			ErrorHandling.printError("잘못된 값입니다.", false);
+			return;
+		}
+
+		int menu = Integer.parseInt(input);
+		switch(menu) {
+			case 1:
+				dbRunningConfig(in);
+				break;
+
+			case 2:
+				showDbContents();
+				break;
+
+			case 3:
+				deleteAllDbContents(in);
+				break;
+
+			default:
+				ErrorHandling.printError("잘못된 값입니다.", false);
+		}
+	}
+
+	/**
+	 * 메뉴 8-6-1 DB 동작 설정
+	 */
+	public void dbRunningConfig(final BufferedReader in) throws Exception {
+		boolean runningDb = Configuration.getBoolean("DB", true);
+		System.out.printf("다운로드 내역을 기록할 DB를 작동시킵니다. (현재: %s)\n" +
+				"DB가 켜져있으면 만화를 다운받을 때 다운 기록이 있는 만화는 건너뛰고 다운받을 수 있습니다.\n", runningDb);
 		System.out.print("값 입력(true or false): ");
 
 		String input = in.readLine().toLowerCase();
@@ -277,9 +317,43 @@ public class UI implements DownloadMod {
 			return;
 		}
 
-		Configuration.setProperty("IGNORE_DB", input);
+		Configuration.setProperty("DB", input);
 		Configuration.refresh();
 		System.out.println("변경 완료");
+	}
+
+	/**
+	 * 8-6-2 DB에 저장된 기록을 출력
+	 * @throws Exception
+	 */
+	public void showDbContents() throws Exception {
+		String dbContents = Database.getDatabaseToString();
+		if(dbContents == null || dbContents.trim().isEmpty()) {
+			dbContents = "DB 기록이 없습니다.";
+		}
+		System.out.println(dbContents);
+	}
+
+	/**
+	 * 8-6-3 DB의 모든 내용을 삭제 후 초기화
+	 * @param in
+	 */
+	public void deleteAllDbContents(final BufferedReader in) throws Exception {
+		System.out.println("DB의 모든 다운로드 기록을 삭제하고 초기화 할까요?\n값 입력(Y / n): ");
+		String input = in.readLine().trim();
+
+		if(input.equalsIgnoreCase("y")==false &&
+				input.equalsIgnoreCase("n")==false){
+			ErrorHandling.printError("잘못된 값입니다.", false);
+			return;
+		}
+
+		if(input.equalsIgnoreCase("y")) {
+			Database.deleteAll();
+			System.out.println("DB 초기화 완료");
+		} else {
+			System.out.println("취소하였습니다.");
+		}
 	}
 	
 	public void close() {
