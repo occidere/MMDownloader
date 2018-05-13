@@ -58,8 +58,8 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.5.1.0"; //프로그램 버전
-	private static final String UPDATED_DATE = "2018.05.06"; //업데이트 날짜
+	private static final String VERSION = "0.5.1.2"; //프로그램 버전
+	private static final String UPDATED_DATE = "2018.05.13"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
@@ -80,11 +80,11 @@ public class SystemInfo {
 		System.out.print(DEVELOPER+"\t");
 		System.out.println(VERSION_INFO);
 		System.out.println("저장경로: "+Configuration.getString("PATH", DEFAULT_PATH));
-		System.out.printf("(이미지 병합: %s, 디버깅 모드: %s, 멀티스레딩: %d, DB 무시: %s)\n",
+		System.out.printf("(이미지 병합: %s, 디버깅 모드: %s, 멀티스레딩: %d, DB 사용: %s)\n",
 				Configuration.getBoolean("MERGE", false),
 				Configuration.getBoolean("DEBUG", false),
 				Configuration.getInt("MULTI", 2),
-				Configuration.getBoolean("IGNORE_DB", false));
+				Configuration.getBoolean("DB", true));
 	}
 
 	/**
@@ -340,10 +340,16 @@ public class SystemInfo {
 		+ "    -- 3: 코어 개수의 2배 만큼을 할당합니다 (고성능)\n"
 		+ "    -- 4: 사용할 수 있는 최대한 할당합니다 (초고성능)\n"
 		+ "   - 기본값: 2\n"
-		+ "  6) 강제 다운로드\n"
-		+ "  - DB에 저장된 기록을 무시하고 이미 다운받은 만화도 강제로 다운받습니다.\n"
-		+ "  - 기본값: false\n"
+		+ "  6) DB 설정\n"
+		+ "   - 다운로드 기록을 저장하는 DB 관련 설정을 괸리합니다.\n"
+		+ "    -- 1) DB 동작 설정: DB 기능의 사용 여부를 설정합니다.\n"
+		+ "       - DB가 켜져있으면 다운 내역을 기록하고, 추후 다운로드시 이미 받은 만화는 건너뛰고 새로운 만화만 다운받을 수 있습니다.\n"
+		+ "         기본값: true\n"
+		+ "    -- 2) DB 내용 출력\n"
+		+ "       - DB에 저장된 기록을 확인합니다.\n"
+		+ "    -- 3) DB 초기화\n"
+		+ "       - DB에 저장된 모든 기록을 삭제하고 초기화 합니다.\n"
 		+ "\n0. 종료\n"
 		+ " - 모든 작업을 중단하고 프로그램을 종료합니다.\n"
-		+ "\n작성자: occidere\t작성일: 2018.05.06\n\n";
+		+ "\n작성자: occidere\t작성일: 2018.05.13\n\n";
 }
