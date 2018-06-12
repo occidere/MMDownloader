@@ -14,6 +14,7 @@ import util.UserAgent;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection.Response;
 
 import java.util.List;
@@ -114,8 +115,9 @@ public class Downloader {
 			
 			Worker workers[] = new Worker[numberOfPages]; // 다운로드용 inner class 객체
 			// 다운로드 필수 정보들 주입
-			for(String imgURL : imgList)
+			for(String imgURL : imgList) {
 				workers[pageNum] = new Worker(imgURL, path, subFolder, ++pageNum, numberOfPages);
+			}
 			
 			// 사용가능한 코어 수. 최소 1개는 보장
 			final int CORE_COUNT = Math.max(1, Runtime.getRuntime().availableProcessors());
@@ -376,14 +378,20 @@ public class Downloader {
 		private final String imgURL, path, subFolder;
 		private final int pageNum, numberOfPages;
 		
+		private String host;
+		private String referer;
+		
 		public Worker(String imgURL, String path, String subFolder, int pageNum, int numberOfPages) {
-			this.imgURL = imgURL;
+			this.imgURL = imgURL; // http://wasabisyrup.com/storage/gallery/fTF1QkrSaJ4/P0001_9nmjZa2886s.jpg
 			this.path = path;
 			this.subFolder = subFolder;
 			this.pageNum = pageNum; // 페이지 번호는 001.jpg, 052.jpg, 337.jpg같은 형식
 			this.numberOfPages = numberOfPages;
+			
+			this.host = StringUtils.substringBetween(imgURL, "http://", "/");
+			this.referer = StringUtils.substringBeforeLast(imgURL, "/");
 		}
-		
+
 		@Override
 		public void run() {
 			try {	//try...catch를 Worker 내부에 사용해서 이미지 한개 다운로드가 실패해도 전체가 종료되는 불상사 방지
@@ -427,6 +435,8 @@ public class Downloader {
 			conn.setRequestProperty("charset", "utf-8");
 			conn.setRequestProperty("User-Agent", UserAgent.getUserAgent());
 			//conn.setRequestProperty("Accept-Encoding", "gzip");
+			conn.setRequestProperty("Host", host);
+			conn.setRequestProperty("Referer", referer);
 			
 			int len, imageSize = conn.getContentLength(); // byte size
 			InputStream inputStream = conn.getInputStream(); //속도저하의 원인
