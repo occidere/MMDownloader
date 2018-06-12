@@ -1,5 +1,5 @@
 # MMDownloader
-[![Latest](https://img.shields.io/badge/Latest-v0.5.0.8-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.8)
+[![Latest](https://img.shields.io/badge/Latest-v0.5.1.1-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.1.1)
 [![Build Status](https://travis-ci.org/occidere/MMDownloader.svg?branch=master)](https://travis-ci.org/occidere/MMDownloader)
 ![Downloads](https://img.shields.io/github/downloads/occidere/MMDownloader/total.svg)
 [![Java Version](https://img.shields.io/badge/Java-1.8-red.svg)](https://www.java.com/ko/)
@@ -35,6 +35,12 @@
 * 다운로드 속도는 마루마루 서버 상태와 PC의 네트워크 속도에 제일 큰 영향을 받습니다.
 
 ### 업데이트 내역
+--- ver 0.5.1.1 ---
+ * Referer 헤더가 없어서 다운로드 시 403 에러가 발생하던 문제 해결
+ * Referer 헤더와 Host 헤더 추가
+ * apache-commons-lang3, junit-4.12 라이브러리 추가
+ * Jsoup-1.11.3 으로 업데이트
+
 --- ver 0.5.0.8 ---
  * 최신버전 업데이트 상황 표시기 수정 완료
  * 만화 URL에 ASCII 이외 값이 포함된 경우 다운로드가 제대로 되지 않던 문제 해결
