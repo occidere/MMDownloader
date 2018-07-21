@@ -150,16 +150,16 @@ public class Downloader {
 			catch (Exception e) {
 				ErrorHandling.saveErrLog("다운로드 실패", "제목: "+subFolder, e);
 			}
-		}
-		
-		/* 다운받은 만화들을 하나로 합치는 property 값이 true면 합침(기본: false) */
-		try {
-			Configuration.refresh();
-			if(Configuration.getBoolean("MERGE", false))
-				new ImageMerge(path).mergeAll(subFolder);
-		}
-		catch(Exception e) {
-			ErrorHandling.saveErrLog("이미지 병합 실패", "", e);
+			
+			/* 다운받은 만화들을 하나로 합치는 property 값이 true면 합침(기본: false) */
+			try {
+				Configuration.refresh();
+				if(Configuration.getBoolean("MERGE", false))
+					new ImageMerge(path).mergeAll(subFolder);
+			}
+			catch(Exception e) {
+				ErrorHandling.saveErrLog("이미지 병합 실패", "", e);
+			}
 		}
 	}
 	
