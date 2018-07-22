@@ -164,7 +164,7 @@ public class Downloader {
 			try {
 				Configuration.refresh();
 				if(Configuration.getBoolean("ZIP", false)) {
-					ImageCompress.compress(path + ".zip");
+					ImageCompress.compress(path);
 				}
 			} catch (Exception e) {
 				ErrorHandling.saveErrLog("다운받은 만화 압축 실패", "", e);
