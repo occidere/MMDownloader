@@ -42,7 +42,7 @@ public class ImageCompress {
 		ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(saveFileFullName));
 
 		for(File image : fileList) {
-			String canonicalPath = StringUtils.substringAfterLast(image.getAbsolutePath(), getLastDirectory(targetDirectory));
+			String canonicalPath = StringUtils.substringAfter(image.getAbsolutePath(), getLastDirectory(targetDirectory));
 			
 			zipOutputStream.putNextEntry(new ZipEntry(canonicalPath));
 			zipOutputStream.write(FileUtils.readFileToByteArray(image));
