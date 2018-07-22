@@ -14,21 +14,17 @@ import common.ErrorHandling;
  * @author occidere
  */
 public class ImageMerge{
-	private File root = null; //병합할 이미지들이 들어있는 폴더
-	private String imgExt = ".+\\.(?i)(jpe?g|bmp|png|gif)$"; //확장자 정규식
+	private ImageMerge() {}
 	
-	public ImageMerge() {
-		this(System.getProperty("user.dir"));
-	}
-	
-	public ImageMerge(String rootPath) {
-		root = new File(rootPath);
-	}
+	private static File root = new File(System.getProperty("user.dir")); //병합할 이미지들이 들어있는 폴더
+	private static String imgExt = ".+\\.(?i)(jpe?g|bmp|png|gif)$"; //확장자 정규식
 	
 	@SuppressWarnings("unused")
-	public void mergeAll(String mergedName) {
+	public static void mergeAll(String rootPath, String mergedName) {
 		try {
 			System.out.print("이미지 병합중 ... ");
+			
+			root = new File(rootPath);
 			
 			int i, len, preHeight, width, maxWidth = -1, totalHeight = -1;
 			

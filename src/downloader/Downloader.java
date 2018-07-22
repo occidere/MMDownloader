@@ -1,5 +1,25 @@
 package downloader;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -9,28 +29,9 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import common.ErrorHandling;
 import sys.Configuration;
 import sys.SystemInfo;
+import util.ImageCompress;
 import util.ImageMerge;
 import util.UserAgent;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Connection.Response;
-
-import java.util.List;
-import java.util.concurrent.ForkJoinPool;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLEncoder;
 
 public class Downloader {
 	private Downloader(){}
@@ -150,17 +151,27 @@ public class Downloader {
 			catch (Exception e) {
 				ErrorHandling.saveErrLog("다운로드 실패", "제목: "+subFolder, e);
 			}
-			
-			/* 다운받은 만화들을 하나로 합치는 property 값이 true면 합침(기본: false) */
-			try {
-				Configuration.refresh();
-				if(Configuration.getBoolean("MERGE", false))
-					new ImageMerge(path).mergeAll(subFolder);
-			}
-			catch(Exception e) {
-				ErrorHandling.saveErrLog("이미지 병합 실패", "", e);
-			}
 		}
+		
+		/* 다운받은 만화들을 하나로 합치는 property 값이 true면 합침(기본: false) */
+		try {
+			Configuration.refresh();
+			if(Configuration.getBoolean("MERGE", false)) {
+				ImageMerge.mergeAll(path, subFolder);
+			}
+		} catch(Exception e) {
+			ErrorHandling.saveErrLog("이미지 병합 실패", "", e);
+		}
+		/* 다운받은 만화들을 압축한다. */
+		try {
+			Configuration.refresh();
+			if(Configuration.getBoolean("ZIP", false)) {
+				ImageCompress.compress(path + ".zip");
+			}
+		} catch (Exception e) {
+			ErrorHandling.saveErrLog("다운받은 만화 압축 실패", "", e);
+		}
+		
 	}
 	
 	/**

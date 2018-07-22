@@ -58,8 +58,8 @@ public class SystemInfo {
 	private transient static final String LATEST_VERSION_URL = "https://github.com/occidere/MMDownloader/blob/master/VERSION_INFO";
 	
 	/* <수정 금지> 프로그램 정보 */
-	private static final String VERSION = "0.5.1.1"; //프로그램 버전
-	private static final String UPDATED_DATE = "2018.06.13"; //업데이트 날짜
+	private static final String VERSION = "0.5.2.0"; //프로그램 버전
+	private static final String UPDATED_DATE = "2018.07.22"; //업데이트 날짜
 	private static final String DEVELOPER = "제작자: occidere"; //제작자 정보
 	private static final String VERSION_INFO = String.format("현재버전: %s (%s)", VERSION, UPDATED_DATE);
 	
@@ -77,13 +77,13 @@ public class SystemInfo {
 	public static void printProgramInfo(){
 		try { Configuration.refresh(); }
 		catch (Exception e) {}
-		System.out.print(DEVELOPER+"\t");
-		System.out.println(VERSION_INFO);
-		System.out.println("저장경로: "+Configuration.getString("PATH", DEFAULT_PATH));
-		System.out.printf("(이미지 병합: %s, 디버깅 모드: %s, 멀티스레딩: %d)\n",
+		System.out.printf("%s\t%s\n", DEVELOPER, VERSION_INFO);
+		System.out.printf("저장경로: %s\n", Configuration.getString("PATH", DEFAULT_PATH));
+		System.out.printf("(이미지 병합: %s, 디버깅 모드: %s, 멀티스레딩: %d, zip 압축: %s)\n",
 				Configuration.getBoolean("MERGE", false),
 				Configuration.getBoolean("DEBUG", false),
-				Configuration.getInt("MULTI", 2));
+				Configuration.getInt("MULTI", 2),
+				Configuration.getBoolean("ZIP", false));
 	}
 
 	/**
@@ -112,17 +112,22 @@ public class SystemInfo {
 			}
 		}
 		
-		System.out.println(VERSION_INFO); //현재 버전 출력
-		System.out.println(LATEST_VERSION_INFO); //서버의 최신 버전 출력
+		System.out.printf("%s\n%s\n", VERSION_INFO, LATEST_VERSION_INFO); //현재 버전 & 서버의 최신 버전 출력 
 		
 		//최신버전 체크가 제대로 됬을 때, 현재 버전이 최신 버전보다 낮으면 업데이트 여부 물어봄.
 		if(LATEST_VERSION_INFO != null && LATEST_VERSION_INFO.length() > 0){
 			int curVersion = Integer.parseInt(VERSION.replace(".", ""));
 			int latestVersion = Integer.parseInt(LATEST_VERSION.replace(".", ""));
 			
-			if(curVersion < latestVersion) downloadLatestVersion(in);
-			else if(curVersion == latestVersion) System.out.println("현재 최신버전입니다!");
-			else System.out.println("버전이 이상합니다! ᕙ(•̀‸•́‶)ᕗ");
+			if(curVersion < latestVersion) {
+				downloadLatestVersion(in);
+			}
+			else if(curVersion == latestVersion) {
+				System.out.println("현재 최신버전입니다!");
+			}
+			else {
+				System.out.println("버전이 이상합니다! ᕙ(•̀‸•́‶)ᕗ");
+			}
 		}
 	}
 	
@@ -310,7 +315,7 @@ public class SystemInfo {
 		+ "\n3. 다운로드 폴더 열기\n"
 		+ " - 기본적으로 GUI가 지원되야 합니다. 만일 폴더가 없더라도 자동으로 생성되고 열리게 됩니다.\n"
 		+ "  -- Windows의 경우 C:\\Users\\사용자\\Marumaru\\ 폴더가 열립니다.\n"
-		+ "  -- Mac과 Linux의 경우 home/사용자/marumaru/ 폴더가 열립니다.\n"
+		+ "  -- Mac과 Linux의 경우 /home/사용자/marumaru/ 폴더가 열립니다.\n"
 		+ "\n4. 마루마루 접속\n"
 		+ " - 기본적으로 GUI가 지원되야 합니다. 사용자 PC의 기본 브라우저를 이용하여 마루마루 페이지에 접속합니다.\n"
 		+ "\n8. 설정\n"
@@ -339,6 +344,9 @@ public class SystemInfo {
 		+ "    -- 3: 코어 개수의 2배 만큼을 할당합니다 (고성능)\n"
 		+ "    -- 4: 사용할 수 있는 최대한 할당합니다 (초고성능)\n"
 		+ "   - 기본값: 2\n"
+		+ "  6) 만화 압축하기\n"
+		+ "   - 다운받은 만화를 zip으로 압축합니다."
+		+ "   - 기본값: false\n"
 		+ "\n0. 종료\n"
 		+ " - 모든 작업을 중단하고 프로그램을 종료합니다.\n"
 		+ "\n작성자: occidere\t작성일: 2018.02.04\n\n";

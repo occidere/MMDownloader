@@ -20,7 +20,7 @@ public class Configuration {
 	// 환경설정 파일 이름
 	private static final String CONF_NAME = "MMDownloader.properties";
 	// 환경설정 파일 위치: Marumaru/MMDownloader.properties로 고정
-	private static final String CONF_PATH = SystemInfo.DEFAULT_PATH + SystemInfo.fileSeparator + CONF_NAME;
+	private static final String CONF_PATH = SystemInfo.DEFAULT_PATH + File.separator + CONF_NAME;
 	
 	private static File profile = new File(CONF_PATH);
 	private static Properties props = new Properties();
@@ -41,6 +41,7 @@ public class Configuration {
 		if(props.containsKey("MERGE")==false) props.setProperty("MERGE", "false");
 		if(props.containsKey("DEBUG")==false) props.setProperty("DEBUG", "false");
 		if(props.containsKey("MULTI")==false) props.setProperty("MULTI", "2"); // MULTI = 0, 1, 2, 3, 4
+		if(props.containsKey("ZIP")==false) props.put("ZIP", "false");
 		
 		/************************************************************************/
 		
@@ -109,7 +110,9 @@ public class Configuration {
 			profile = new File(CONF_PATH);
 			profile.createNewFile();
 		}
-		if(props == null) props = new Properties();
+		if(props == null) {
+			props = new Properties();
+		}
 	}
 	
 	public static void setProperty(String key, String value) {
