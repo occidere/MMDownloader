@@ -1,5 +1,5 @@
 # MMDownloader
-[![Latest](https://img.shields.io/badge/Latest-v0.5.1.1-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.1.1)
+[![Latest](https://img.shields.io/badge/Latest-v0.5.2.0-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.2.0)
 [![Build Status](https://travis-ci.org/occidere/MMDownloader.svg?branch=master)](https://travis-ci.org/occidere/MMDownloader)
 ![Downloads](https://img.shields.io/github/downloads/occidere/MMDownloader/total.svg)
 [![Java Version](https://img.shields.io/badge/Java-1.8-red.svg)](https://www.java.com/ko/)
@@ -9,7 +9,7 @@
 
 ### 사용법(Gitbook): https://occidere.gitbooks.io/mmdownloader/content/
 
-### 다운로드: [Release](https://github.com/occidere/MMDownloader/releases/tag/v0.5.0.8)
+### 다운로드: [Release](https://github.com/occidere/MMDownloader/releases/tag/v0.5.2.0)
 
 ### 주의사항
 * 해당 프로그램은 HtmlUnit과 Jsoup 라이브러리를 사용하였으며, Apache License 2.0을 따르고 있습니다.
@@ -35,6 +35,11 @@
 * 다운로드 속도는 마루마루 서버 상태와 PC의 네트워크 속도에 제일 큰 영향을 받습니다.
 
 ### 업데이트 내역
+--- ver 0.5.2.0 ---
+  * 여러 만화 다운로드 시 이미지 병합이 마지막 만화에만 적용되던 버그 수정 
+  * 다운받은 만화 .zip으로 압축 기능 추가 
+  * common-io 2.6 라이브러리 추가 
+
 --- ver 0.5.1.1 ---
  * Referer 헤더가 없어서 다운로드 시 403 에러가 발생하던 문제 해결
  * Referer 헤더와 Host 헤더 추가
