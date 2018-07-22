@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 
+import org.apache.commons.lang3.StringUtils;
+
 import common.DownloadMod;
 import common.ErrorHandling;
 import common.InputCheck;
@@ -116,6 +118,10 @@ public class UI implements DownloadMod {
 				case 5: //멀티스레딩 모드
 					multiThreadMode(in);
 					break;
+					
+				case 6: // 다운받은 만화 압축하기
+					compressImage(in);
+					break;
 				}
 				
 				menuNum = 8; //이걸 달아줘야지 종료되는거 막을 수 있음
@@ -136,7 +142,7 @@ public class UI implements DownloadMod {
 	/**
 	 * <p>UI에 보여줄 메뉴 출력 메서드
 	 */
-	private void printMenu(){
+	private static void printMenu(){
 		String menu = 
 				"메뉴를 선택하세요\n"+
 				"  1. 만화 다운로드\n"+
@@ -149,7 +155,7 @@ public class UI implements DownloadMod {
 		System.out.println(menu);
 	}
 	
-	private void printSettingMenu() {
+	private static void printSettingMenu() {
 		String settingMenu = 
 				"설정할 메뉴를 선택하세요\n"+
 				"  1. 업데이트 확인\n"+
@@ -157,6 +163,7 @@ public class UI implements DownloadMod {
 				"  3. 이미지 병합 설정\n"+
 				"  4. 디버깅 모드 설정\n"+
 				"  5. 멀티스레딩 설정\n"+
+				"  6. 이미지 압축 설정\n"+
 				"  9. 뒤로";
 		System.out.println(settingMenu);
 	}
@@ -190,20 +197,18 @@ public class UI implements DownloadMod {
 	 * @throws Exception
 	 */
 	private void mergeImage(final BufferedReader in) throws Exception {
-		String input;
 		boolean merge = Configuration.getBoolean("MERGE", false);
 		System.out.printf("true면 다운받은 만화를 하나의 긴 파일로 합친 파일을 추가로 생성합니다(현재: %s)\n", merge);
 		System.out.print("값 입력(true or false): ");
 		
-		input = in.readLine().toLowerCase();
-		if(!input.equals("true") && !input.equals("false")) {
+		String input = StringUtils.lowerCase(in.readLine());
+		if(StringUtils.containsAny(input, "true", "false")) {
+			Configuration.setProperty("MERGE", input);
+			Configuration.refresh();
+			System.out.println("변경 완료");
+		} else {
 			ErrorHandling.printError("잘못된 값입니다.", false);
-			return;
 		}
-		
-		Configuration.setProperty("MERGE", input);
-		Configuration.refresh();
-		System.out.println("변경 완료");
 	}
 
 	/**
@@ -216,15 +221,14 @@ public class UI implements DownloadMod {
 		System.out.printf("true면 다운로드 과정에 파일의 용량과 메모리 사용량이 같이 출력됩니다(현재: %s)\n", debug);
 		System.out.print("값 입력(true or false): ");
 		
-		String input = in.readLine().toLowerCase();
-		if(!input.equals("true") && !input.equals("false")) {
+		String input = StringUtils.lowerCase(in.readLine());
+		if(StringUtils.containsAny(input, "true", "false")) {
+			Configuration.setProperty("DEBUG", input);
+			Configuration.refresh();
+			System.out.println("변경 완료");
+		} else {
 			ErrorHandling.printError("잘못된 값입니다.", false);
-			return;
 		}
-		
-		Configuration.setProperty("DEBUG", input);
-		Configuration.refresh();
-		System.out.println("변경 완료");
 	}
 	
 	/**
@@ -243,23 +247,37 @@ public class UI implements DownloadMod {
 						+ " 4: 사용할 수 있는 최대한 할당합니다 (초고성능)");
 		System.out.print("값 입력(0 ~ 4): ");
 		
-		String input = in.readLine().replaceAll(" ", "");
-		if(input.matches("[0-4]") == false) {
+		String input = StringUtils.replaceAll(in.readLine(), " ", "");
+		if(input.matches("[0-4]")) {
+			Configuration.setProperty("MULTI", input);
+			Configuration.refresh();
+			System.out.println("변경 완료");
+		} else {
 			ErrorHandling.printError("잘못된 값입니다.", false);
-			return;
 		}
+	}
+	
+	/**
+	 * 8-6 이미지 압축하기 모드 
+	 * @param in
+	 * @throws Exception
+	 */
+	private void compressImage(final BufferedReader in) throws Exception {
+		boolean compress = Configuration.getBoolean("ZIP", false);
+		System.out.printf("다운받은 만화들을 압축할 것인지 설정합니다(현재: %s)\n", compress);
+		System.out.print("값 입력(true or false): ");
 		
-		Configuration.setProperty("MULTI", input);
-		Configuration.refresh();
-		System.out.println("변경 완료");
+		String input = StringUtils.lowerCase(in.readLine());
+		if(StringUtils.containsAny(input, "true", "false")) {
+			Configuration.setProperty("ZIP", input);
+			Configuration.refresh();
+			System.out.println("변경 완료");
+		} else {
+			ErrorHandling.printError("잘못된 값입니다.", false);
+		}
 	}
 	
 	public void close(){
 		instance = null;
 	}
 }
-/*
-변경사항
-1. 오타 수정
-2. 입력 부분 정규식 검증 추가
-*/

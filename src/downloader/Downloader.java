@@ -9,6 +9,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import common.ErrorHandling;
 import sys.Configuration;
 import sys.SystemInfo;
+import util.ImageCompress;
 import util.ImageMerge;
 import util.UserAgent;
 
@@ -85,7 +86,8 @@ public class Downloader {
 		//아카이브 리스트에 담긴 개수 출력
 		System.out.printf("총 %d개\n", archiveAddress.size());
 		
-		String path = "", subFolder = ""; //subFolder = 원피스 3화
+		String path = "";
+		String subFolder = ""; //subFolder = 원피스 3화
 		
 		// http://www.shencomics.com/archives/533456와 같은 아카이브 주소
 		for(Comic comic : archiveAddress){
@@ -110,10 +112,11 @@ public class Downloader {
 
 			SystemInfo.makeDir(path); // 저장경로 폴더 생성
 			
-			System.out.printf("제목 : %s\n다운로드 폴더 : %s\n", comic.getTitle(), path);
-			System.out.printf("다운로드 시작 (전체 %d개)\n", numberOfPages);
+			System.out.printf("제목 : %s\n다운로드 폴더 : %s\n다운로드 시작 (전체 %d개)\n",
+					comic.getTitle(), path, numberOfPages);
 			
 			Worker workers[] = new Worker[numberOfPages]; // 다운로드용 inner class 객체
+			
 			// 다운로드 필수 정보들 주입
 			for(String imgURL : imgList) {
 				workers[pageNum] = new Worker(imgURL, path, subFolder, ++pageNum, numberOfPages);
@@ -121,7 +124,8 @@ public class Downloader {
 			
 			// 사용가능한 코어 수. 최소 1개는 보장
 			final int CORE_COUNT = Math.max(1, Runtime.getRuntime().availableProcessors());
-			int numberOfThreads, multi = Configuration.getInt("MULTI", 2); // value of MULTI property
+			int multi = Configuration.getInt("MULTI", 2); // value of MULTI property
+			int numberOfThreads = 1;
 			
 			/* 0: Sequential (Single Thread Download)
 			 * 1: Thread count = available core count / 2
@@ -155,12 +159,22 @@ public class Downloader {
 		/* 다운받은 만화들을 하나로 합치는 property 값이 true면 합침(기본: false) */
 		try {
 			Configuration.refresh();
-			if(Configuration.getBoolean("MERGE", false))
-				new ImageMerge(path).mergeAll(subFolder);
-		}
-		catch(Exception e) {
+			if(Configuration.getBoolean("MERGE", false)) {
+				ImageMerge.mergeAll(path, subFolder);
+			}
+		} catch(Exception e) {
 			ErrorHandling.saveErrLog("이미지 병합 실패", "", e);
 		}
+		/* 다운받은 만화들을 압축한다. */
+		try {
+			Configuration.refresh();
+			if(Configuration.getBoolean("ZIP", false)) {
+				ImageCompress.compress(path + ".zip");
+			}
+		} catch (Exception e) {
+			ErrorHandling.saveErrLog("다운받은 만화 압축 실패", "", e);
+		}
+		
 	}
 	
 	/**
