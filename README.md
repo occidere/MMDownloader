@@ -1,5 +1,5 @@
 # MMDownloader
-[![Latest](https://img.shields.io/badge/Latest-v0.5.2.0-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.2.0)
+[![Latest](https://img.shields.io/badge/Latest-v0.5.2.2-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.2.2)
 [![Build Status](https://travis-ci.org/occidere/MMDownloader.svg?branch=master)](https://travis-ci.org/occidere/MMDownloader)
 ![Downloads](https://img.shields.io/github/downloads/occidere/MMDownloader/total.svg)
 [![Java Version](https://img.shields.io/badge/Java-1.8-red.svg)](https://www.java.com/ko/)
@@ -23,11 +23,11 @@
 * 지원되는 플랫폼: Windows, MAC OS X(beta), Linux 입니다.
 
 ### 사용 방법
-* 다운로드 경로는 (Windows= C:\Users\사용자\Marumaru) (Linux, MAX OS X= /home/사용자/Marumaru/) 입니다.
+* 다운로드 경로는 (Windows= C:\Users\사용자\Marumaru) (Linux= /home/사용자/Marumaru/, Mac= /Users/사용자/Marumaru) 입니다.
 * 윈도우의 경우 exe파일을 실행시키면 되고, MAC OS X, 리눅스의 경우 java -jar MMDownloader.jar 을 통해 실행시키면 됩니다.
 * 리눅스의 경우 nautilus등의 GUI가 지원되어야 폴더열기, 마루마루 사이트 열기 등을 정상적으로 사용할 수 있습니다.
 * MAC OS X의 경우 개발자가 맥북이 없어서 테스트가 원할하지 않아 베타 버전 정도로만 생각해주시면 됩니다.
-* 자세한 내용은 [여기](https://occidere.gitbooks.io/mmdownloader/content/)를 참고해 주시길 바랍니다.
+* 자세한 내용은 [여기](https://github.com/occidere/MMDownloader/wiki)를 참고해 주시길 바랍니다.
 
 ### 작동과정 중 유의사항
 * Jsoup을 이용하여 고속 파싱 시도를 하여 다운로드를 진행합니다.
@@ -35,6 +35,10 @@
 * 다운로드 속도는 마루마루 서버 상태와 PC의 네트워크 속도에 제일 큰 영향을 받습니다.
 
 ### 업데이트 내역
+--- ver 0.5.2.2 ---
+  * Windows에서 이미지 압축 에러 버그 수정
+  * 이미지 압축 도움말 개행 픽스
+
 --- ver 0.5.2.0 ---
   * 여러 만화 다운로드 시 이미지 병합이 마지막 만화에만 적용되던 버그 수정 
   * 다운받은 만화 .zip으로 압축 기능 추가 
