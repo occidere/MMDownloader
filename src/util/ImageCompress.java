@@ -35,6 +35,7 @@ public class ImageCompress {
 	public static void compress(String saveFileFullName, String targetDirectory) throws Exception {
 		saveFileFullName = removeLastSeparator(saveFileFullName) + ".zip";
 		targetDirectory = removeLastSeparator(targetDirectory);
+//		System.out.printf("saveFileFullName: %s\ntargetDirectory: %s\n", saveFileFullName, targetDirectory);
 		
 		System.out.printf("이미지 압축중 ... ");
 		
@@ -43,6 +44,7 @@ public class ImageCompress {
 
 		for(File image : fileList) {
 			String canonicalPath = StringUtils.substringAfter(image.getAbsolutePath(), getLastDirectory(targetDirectory));
+//			System.out.printf("image.getAbsolutePath(): %s\ncanonicalPath: %s\n", image.getAbsolutePath(), canonicalPath);
 			
 			zipOutputStream.putNextEntry(new ZipEntry(canonicalPath));
 			zipOutputStream.write(FileUtils.readFileToByteArray(image));
@@ -60,7 +62,8 @@ public class ImageCompress {
 	 * @return 마지막 디렉토리 명 
 	 */
 	private static String getLastDirectory(String absolutePath) {
-		return StringUtils.substringAfterLast(removeLastSeparator(absolutePath), File.separator);
+		String replaced = removeLastSeparator(absolutePath).replace("\\", "/");
+		return StringUtils.substringAfterLast(replaced, "/");
 	}
 	
 	/**
@@ -69,7 +72,10 @@ public class ImageCompress {
 	 * @return 마지막에 경로 구분자가 있었다면 제거된 값  
 	 */
 	private static String removeLastSeparator(String path) {
-		String separator = File.separator;
-		return StringUtils.containsOnly(path, separator) ? path : StringUtils.stripEnd(path, separator);
+		String replaced = path.replace("\\", "/");
+		if(replaced.endsWith("/") && replaced.length() > 1) {
+			replaced = path.substring(0, replaced.length()-1);
+		}
+		return replaced;
 	}
 }
