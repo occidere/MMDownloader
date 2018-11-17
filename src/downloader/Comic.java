@@ -1,9 +1,6 @@
 package downloader;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -12,8 +9,7 @@ import java.util.List;
  * 현재 최소 경량화 상태
  * @author occidere
  */
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Comic {
