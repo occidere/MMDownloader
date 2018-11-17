@@ -15,6 +15,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ch.qos.logback.classic.Logger;
+import common.MaruLoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -53,6 +55,8 @@ public class Downloader {
 	
 	final int BUF_SIZE = 1048576;
 	final int MAX_WAIT_TIME = 30000; //최대 대기시간 30초
+
+	private static final Logger PRINT_LOGGER = MaruLoggerFactory.getPrintLogger();
 	
 	/**
 	 * 선택된 페이지들만 다운로드
@@ -84,13 +88,14 @@ public class Downloader {
 	 */
 	public void download(List<Comic> archiveAddress) {
 		//아카이브 리스트에 담긴 개수 출력
-		System.out.printf("총 %d개\n", archiveAddress.size());
+
+		PRINT_LOGGER.info("총 {}개", archiveAddress.size());
 		
 		String path = "", subFolder = ""; //subFolder = 원피스 3화
 		
 		// http://www.shencomics.com/archives/533456와 같은 아카이브 주소
 		for(Comic comic : archiveAddress){
-			System.out.println("다운로드 시도중...");
+			PRINT_LOGGER.info("다운로드 시도중...");
 			
 			// 아카이브주소를 바탕으로 이미지 URL 파싱해 comic객체 내부에 저장
 			if(parseImageURL(comic) == false){
@@ -110,9 +115,10 @@ public class Downloader {
 			int numberOfPages = imgList.size(); //전체 이미지의 개수
 
 			SystemInfo.makeDir(path); // 저장경로 폴더 생성
-			
-			System.out.printf("제목 : %s\n다운로드 폴더 : %s\n", comic.getTitle(), path);
-			System.out.printf("다운로드 시작 (전체 %d개)\n", numberOfPages);
+
+			PRINT_LOGGER.info("제목 : {}", comic.getTitle());
+			PRINT_LOGGER.info("다운로드 폴더 : {}", path);
+			PRINT_LOGGER.info("다운로드 시작 (전체 {}개)", numberOfPages);
 			
 			Worker workers[] = new Worker[numberOfPages]; // 다운로드용 inner class 객체
 			// 다운로드 필수 정보들 주입
@@ -180,8 +186,8 @@ public class Downloader {
 	private boolean parseImageURL(Comic comic) {
 		try {
 			String pageSource = getHtmlPage(comic.getAddress());
-			System.out.println("이미지 추출중...");
-			
+			PRINT_LOGGER.info("이미지 추출중...");
+
 			//Html코드 파싱 후 Jsoup doc 형식으로 생성
 			Document doc = Jsoup.parse(pageSource);
 			
@@ -246,7 +252,7 @@ public class Downloader {
 	 * @return 성공하면 html 코드를 리턴
 	 */
 	private String getHtmlPageJsoup(String eachArchiveAddress) throws Exception {
-		System.out.print("고속 연결 시도중 ... ");
+		PRINT_LOGGER.info("고속 연결 시도중 ... ");
 
 		// pageSource = Html코드를 포함한 페이지 소스코드가 담길 스트링, domain = http://wasabisyrup.com <-마지막 / 안붙음!
 		String pageSource = null;
@@ -271,7 +277,7 @@ public class Downloader {
 			pageSource = preDoc.toString();
 		}
 
-		System.out.println("성공");
+		PRINT_LOGGER.info("고속 연결 성공!");
 		return pageSource; //성공 시 html코드 리턴
 	}
 	
@@ -284,8 +290,8 @@ public class Downloader {
 		/* 필수! 로그 메세지 출력 안함 -> HtmlUnit 이용시 Verbose한 로그들이 너무 많아서 다 끔 */
 		java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF); 
 		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
-		
-		System.out.print("일반 연결 시도중 ... ");
+
+		PRINT_LOGGER.info("일반 연결 시도중 ... ");
 		
 		WebClient webClient = new WebClient();
 		webClient.getOptions().setRedirectEnabled(true);
@@ -304,7 +310,7 @@ public class Downloader {
 		/** 여기도 페이지 파싱 실패 시 검증하는 코드 들어가야 됨 **/
 		
 		webClient.close();
-		System.out.println("성공");
+		PRINT_LOGGER.info("일반 연결 성공");
 		return pageSource;
 	}
 	
@@ -408,6 +414,7 @@ public class Downloader {
 				int imageSize = download();
 				long elapsed = (System.currentTimeMillis() - st);
 
+				// TODO System.out.print 들 전부 PRINT_LOGGER 적용해야 함.
 				System.out.printf("%3d / %3d ...... 완료! (%s)", pageNum, numberOfPages, getStrSpeed(imageSize, elapsed));
 				
 				// DEBUG값이 true이면 다운받은 이미지 용량 & 메모리 정보, 스레드 & 날짜 정보 출력
