@@ -1,5 +1,5 @@
 # MMDownloader
-[![Latest](https://img.shields.io/badge/Latest-v0.5.2.2-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.2.2)
+[![Latest](https://img.shields.io/badge/Latest-v0.5.3.0-brightgreen.svg)](https://github.com/occidere/MMDownloader/releases/tag/v0.5.3.0)
 [![Build Status](https://travis-ci.org/occidere/MMDownloader.svg?branch=master)](https://travis-ci.org/occidere/MMDownloader)
 ![Downloads](https://img.shields.io/github/downloads/occidere/MMDownloader/total.svg)
 [![Java Version](https://img.shields.io/badge/Java-1.8-red.svg)](https://www.java.com/ko/)
@@ -9,7 +9,7 @@
 
 ### 사용법(Gitbook): https://occidere.gitbooks.io/mmdownloader/content/
 
-### 다운로드: [Release](https://github.com/occidere/MMDownloader/releases/tag/v0.5.2.2)
+### 다운로드: [Release](https://github.com/occidere/MMDownloader/releases/tag/v0.5.3.0)
 
 ### 주의사항
 * 해당 프로그램은 HtmlUnit과 Jsoup 라이브러리를 사용하였으며, Apache License 2.0을 따르고 있습니다.
@@ -23,10 +23,9 @@
 * 지원되는 플랫폼: Windows, MAC OS X(beta), Linux 입니다.
 
 ### 사용 방법
-* 다운로드 경로는 (Windows= C:\Users\사용자\Marumaru) (Linux= /home/사용자/Marumaru/, Mac= /Users/사용자/Marumaru) 입니다.
+* 다운로드 경로는 (Windows= C:\Users\사용자\Marumaru, Linux= /home/사용자/Marumaru/, Mac= /Users/사용자/Marumaru) 입니다.
 * 윈도우의 경우 exe파일을 실행시키면 되고, MAC OS X, 리눅스의 경우 java -jar MMDownloader.jar 을 통해 실행시키면 됩니다.
 * 리눅스의 경우 nautilus등의 GUI가 지원되어야 폴더열기, 마루마루 사이트 열기 등을 정상적으로 사용할 수 있습니다.
-* MAC OS X의 경우 개발자가 맥북이 없어서 테스트가 원할하지 않아 베타 버전 정도로만 생각해주시면 됩니다.
 * 자세한 내용은 [여기](https://github.com/occidere/MMDownloader/wiki)를 참고해 주시길 바랍니다.
 
 ### 작동과정 중 유의사항
@@ -35,6 +34,10 @@
 * 다운로드 속도는 마루마루 서버 상태와 PC의 네트워크 속도에 제일 큰 영향을 받습니다.
 
 ### 업데이트 내역
+--- ver 0.5.3.0 ---
+  * 광고까지 다운로드 되던 문제 수정
+  * 출력문 및 에러 로깅에 logback 적용
+
 --- ver 0.5.2.2 ---
   * Windows에서 이미지 압축 에러 버그 수정
   * 이미지 압축 도움말 개행 픽스
