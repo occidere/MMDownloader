@@ -1,5 +1,25 @@
 package downloader;
 
+import ch.qos.logback.classic.Logger;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import common.ErrorHandling;
+import common.MaruLoggerFactory;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+import sys.Configuration;
+import sys.SystemInfo;
+import util.ImageCompress;
+import util.ImageMerge;
+import util.UserAgent;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -14,27 +34,6 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import ch.qos.logback.classic.Logger;
-import common.MaruLoggerFactory;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-
-import common.ErrorHandling;
-import sys.Configuration;
-import sys.SystemInfo;
-import util.ImageCompress;
-import util.ImageMerge;
-import util.UserAgent;
 
 public class Downloader implements AutoCloseable {
 	private Downloader() {}
@@ -225,7 +224,7 @@ public class Downloader implements AutoCloseable {
 	 * @param eachArchiveAddress 실제 만화가 담긴 아카이브 주소
 	 * @return 이미지(.jpg) 주소가 포함된 Archive의  HTML 소스코드
 	 */
-	private String getHtmlPage(String eachArchiveAddress) throws Exception {
+	private String getHtmlPage(String eachArchiveAddress) {
 		String pageSource = null;
 
 		try { //우선 Jsoup을 이용한 고속 파싱 시도
@@ -272,12 +271,13 @@ public class Downloader implements AutoCloseable {
 				.execute();
 
 		Document preDoc = response.parse(); //받아온 HTML 코드를 저장
+		Elements galleryTemplateElement = preDoc.select("div.gallery-template");
 
 		// <div class="gallery-template">이 만화 담긴 곳.
-		if (preDoc.select("div.gallery-template").isEmpty()) {
+		if (galleryTemplateElement.isEmpty()) {
 			throw new RuntimeException("Jsoup Parsing Failed: No tag found");
 		} else { // 만약 Jsoup 파싱 시 내용 있으면 성공
-			pageSource = preDoc.toString();
+			pageSource = galleryTemplateElement.html();
 		}
 
 		print.info("고속 연결 성공!\n");
