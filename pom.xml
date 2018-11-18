@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.occidere</groupId>
 	<artifactId>MMDownloader</artifactId>
-	<version>0.5.2.2</version>
+	<version>0.5.3.0</version>
 	<description>MMDownloader</description>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
