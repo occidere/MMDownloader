@@ -24,6 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
+import ch.qos.logback.classic.Logger;
+import common.MaruLoggerFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Document;
@@ -39,6 +41,8 @@ import common.ErrorHandling;
 @SuppressWarnings("unused")
 public class SystemInfo {
 	private SystemInfo(){}
+
+	private static Logger print = MaruLoggerFactory.getPrintLogger();
 	
 	//운영체제별 파일 구분자
 	static final String fileSeparator = File.separator; //윈도우는 \, 나머지는 /
@@ -77,9 +81,9 @@ public class SystemInfo {
 	public static void printProgramInfo(){
 		try { Configuration.refresh(); }
 		catch (Exception e) {}
-		System.out.printf("%s\t%s\n", DEVELOPER, VERSION_INFO);
-		System.out.printf("저장경로: %s\n", Configuration.getString("PATH", DEFAULT_PATH));
-		System.out.printf("(이미지 병합: %s, 디버깅 모드: %s, 멀티스레딩: %d, zip 압축: %s)\n",
+		print.info("{}\t{}\n", DEVELOPER, VERSION_INFO);
+		print.info("저장경로: {}\n", Configuration.getString("PATH", DEFAULT_PATH));
+		print.info("(이미지 병합: {}, 디버깅 모드: {}, 멀티스레딩: {}, zip 압축: {})\n",
 				Configuration.getBoolean("MERGE", false),
 				Configuration.getBoolean("DEBUG", false),
 				Configuration.getInt("MULTI", 2),
@@ -95,7 +99,7 @@ public class SystemInfo {
 	public static void printLatestVersionInfo(BufferedReader in){
 		//최신 버전 정보가 null 인 경우에만 실행 == 최초 1회만 실행
 		if(LATEST_VERSION_INFO == null){
-			System.out.println("최신 버전 확인중...");
+			print.info("최신 버전 확인중...\n");
 			try{
 				Document doc = Jsoup.connect(LATEST_VERSION_URL).get();
 				Elements e = doc.getElementsByClass("highlight tab-size js-file-line-container");
@@ -111,8 +115,8 @@ public class SystemInfo {
 				return; //업데이트 실패 시 버전 체크 작업 종료
 			}
 		}
-		
-		System.out.printf("%s\n%s\n", VERSION_INFO, LATEST_VERSION_INFO); //현재 버전 & 서버의 최신 버전 출력 
+
+		print.info("{}\n{}\n", VERSION_INFO, LATEST_VERSION_INFO); //현재 버전 & 서버의 최신 버전 출력
 		
 		//최신버전 체크가 제대로 됬을 때, 현재 버전이 최신 버전보다 낮으면 업데이트 여부 물어봄.
 		if(LATEST_VERSION_INFO != null && LATEST_VERSION_INFO.length() > 0){
@@ -123,10 +127,10 @@ public class SystemInfo {
 				downloadLatestVersion(in);
 			}
 			else if(curVersion == latestVersion) {
-				System.out.println("현재 최신버전입니다!");
+				print.info("현재 최신버전입니다!\n");
 			}
 			else {
-				System.out.println("버전이 이상합니다! ᕙ(•̀‸•́‶)ᕗ");
+				print.info("버전이 이상합니다! ᕙ(•̀‸•́‶)ᕗ\n");
 			}
 		}
 	}
@@ -146,7 +150,7 @@ public class SystemInfo {
 			boolean isCorrectlySelected = false;
 			
 			while(!isCorrectlySelected){ //다운로드 받거나(y) 취소(n)를 제대로 선택할 때 까지 반복.
-				System.out.printf("최신 버전(%s)을 다운받으시겠습니까? (Y/n): ", LATEST_VERSION);
+				print.info("최신 버전({})을 다운받으시겠습니까? (Y/n): ", LATEST_VERSION);
 				select = in.readLine();
 				
 				if(select.equalsIgnoreCase("y")){
@@ -175,8 +179,8 @@ public class SystemInfo {
 					int readByte = 0;	// 읽은 바이트 값
 					int accum = 0;		// 누적 바이트 길이
 					int count = 0;		// MB 를 넘기 전 까지 읽어들인 바이트 길이
-					
-					System.out.println("다운로드중 ...");
+
+					print.info("다운로드중 ...\n");
 					
 					while((readByte = bis.read()) != -1){
 						bos.write(readByte);
@@ -185,18 +189,18 @@ public class SystemInfo {
 						if(++count >= MB) {
 							accum += count;
 							count = 0;
-							System.out.printf("%,3.2f MB / %,3.2f MB 완료!\n", (double) accum / MB, MB_SIZE);
+							print.info("{}\n", String.format("%,3.2f MB / %,3.2f MB 완료!", (double) accum / MB, MB_SIZE));
 						}
 					}
 					bos.close();
 					bis.close();
-					
-					System.out.printf("%,3.2f MB / %,3.2f MB 완료!\n", (double) (accum + count) / MB, MB_SIZE);
-					System.out.println("완료! (위치: "+DEFAULT_PATH+fileSeparator+fileName+")");
+
+					print.info("{}\n", String.format("%,3.2f MB / %,3.2f MB 완료!", (double) (accum + count) / MB, MB_SIZE));
+					print.info("완료! (위치: {})", DEFAULT_PATH + fileSeparator + fileName);
 				}
 				else if(select.equalsIgnoreCase("n")){
 					isCorrectlySelected = true;
-					System.out.println("업데이트가 취소되었습니다.");
+					print.info("업데이트가 취소되었습니다.\n");
 				}
 			}
 		}
@@ -272,7 +276,7 @@ public class SystemInfo {
 	 * <p>도움말 출력 메서드
 	 */
 	public static void help(){
-		System.out.println(MESSAGE);
+		print.info("{}\n", MESSAGE);
 	}
 	
 	/**
