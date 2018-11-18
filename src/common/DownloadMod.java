@@ -7,11 +7,7 @@ package common;
  *
  */
 public interface DownloadMod {
-	public static final int ALL_DOWNLOAD = 10;
-	public static final int SINGLE_DOWNLOAD = 20;
-	public static final int SELECTIVE_DOWNLOAD = 30;
+	int ALL_DOWNLOAD = 10;
+	int SINGLE_DOWNLOAD = 20;
+	int SELECTIVE_DOWNLOAD = 30;
 }
-/* 
-변경사항
-1. 오타 수정
-*/
