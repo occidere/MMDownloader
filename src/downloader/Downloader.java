@@ -200,9 +200,11 @@ public class Downloader implements AutoCloseable {
 			comic.setTitle(removeSpecialCharacter(doc.select("span.title-subject").first().text()));
 			comic.setTitleNo(doc.select("span.title-no").first().text());
 
-			/* <img class="lz-lazyload" src="/template/images/transparent.png" data-src="/storage/gallery/OrXeaIqMbEc/m0035_T6THtV9OvWI.jpg">
-			 * 위의 data-src부분을 찾아 attribute만 추출하여 List에 담고, 최종적으로 comic 객체 내부에 옮김 */
-			List<String> imgURL = doc.select("img[data-src]").stream()
+			/*
+			<div class="gallery-template" 내부의 이미지만 파싱하여 광고를 제외시킴.
+			<img class="lz-lazyload" src="/template/images/transparent.png" data-src="/storage/gallery/OrXeaIqMbEc/m0035_T6THtV9OvWI.jpg">
+			위의 data-src부분을 찾아 attribute만 추출하여 List에 담고, 최종적으로 comic 객체 내부에 옮김 */
+			List<String> imgURL = doc.select("div.gallery-template > img[data-src]").stream()
 					.map(x -> DOMAIN + encoding(x.attr("data-src"))) //아카이브 이름을 항상 최신으로 정해놓고 시작
 					.collect(Collectors.toList());
 			comic.setImgURL(imgURL); //파싱한 이미지 파일들의 URL을 comic객체에 저장
@@ -271,14 +273,14 @@ public class Downloader implements AutoCloseable {
 				.execute();
 
 		Document preDoc = response.parse(); //받아온 HTML 코드를 저장
+		// title 도 파싱해야 하기 때문에 이미지 부분만 바로 반환하면 안됨
 		Elements galleryTemplateElement = preDoc.select("div.gallery-template");
 
 		// <div class="gallery-template">이 만화 담긴 곳.
 		if (galleryTemplateElement.isEmpty()) {
 			throw new RuntimeException("Jsoup Parsing Failed: No tag found");
 		} else { // 만약 Jsoup 파싱 시 내용 있으면 성공
-			pageSource = galleryTemplateElement.html();
-			ErrorHandling.saveErrLog("html test", pageSource, null);
+			pageSource = preDoc.html();
 		}
 
 		print.info("고속 연결 성공!\n");
