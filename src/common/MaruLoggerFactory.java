@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 @UtilityClass
 public final class MaruLoggerFactory {
 
+	private static Logger printLogger;
+
 	/**
 	 * 에러 내용을 파일로 저장하는 Logger 를 가져온다.
 	 *
@@ -25,7 +27,7 @@ public final class MaruLoggerFactory {
 	 */
 	public static Logger getErrorLogger(String logFileName) {
 		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-		PatternLayoutEncoder encoder = getEncoder(loggerContext, "[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%-5level][%thread][%line] %msg%n");
+		PatternLayoutEncoder encoder = getEncoder(loggerContext, "[%d{yyyy-MM-dd HH:mm:ss}][%-5level][%thread][%class{0}:%line] %msg%n");
 
 		String loggerName = "ErrorLogger";
 		FileAppender fileAppender = getFileAppender(loggerContext, encoder, logFileName, loggerName);
@@ -38,22 +40,26 @@ public final class MaruLoggerFactory {
 	}
 
 	/**
-	 * 메시지 자체만 출력하는 프린트용 Logger 를 가져온다.
+	 * 개행 없이 메시지 자체만 출력하는 프린트용 Logger 를 가져온다.
 	 *
 	 * @return 출력용 Logger 객체
 	 */
 	public static Logger getPrintLogger() {
+		if (printLogger != null) {
+			return printLogger;
+		}
+
 		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-		PatternLayoutEncoder encoder = getEncoder(loggerContext, "%msg%n");
+		PatternLayoutEncoder encoder = getEncoder(loggerContext, "%msg");
 
 		String loggerName = "printLogger";
 		ConsoleAppender consoleAppender = getConsoleAppender(loggerContext, encoder);
 
-		Logger logger = loggerContext.getLogger(loggerName);
-		logger.addAppender(consoleAppender);
-		logger.setAdditive(false);
+		printLogger = loggerContext.getLogger(loggerName);
+		printLogger.addAppender(consoleAppender);
+		printLogger.setAdditive(false);
 
-		return logger;
+		return printLogger;
 	}
 
 	private static PatternLayoutEncoder getEncoder(LoggerContext loggerContext, String pattern) {

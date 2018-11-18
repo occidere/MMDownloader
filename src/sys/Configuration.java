@@ -1,14 +1,11 @@
 package sys;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import common.ErrorHandling;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Properties;
-
-import common.ErrorHandling;
 
 /**
  * 환경설정을 담당하는 static 클래스
@@ -32,7 +29,7 @@ public class Configuration {
 	public static void init() {
 		/* 시작과 동시에 설정파일(MMDownloader.properties) 읽어들여 적용 */
 		try { loadProperty(); }
-		catch(Exception e) { 
+		catch (Exception e) {
 			ErrorHandling.saveErrLog("설정파일 읽기 실패", "", e);
 		}
 		
@@ -47,7 +44,7 @@ public class Configuration {
 		
 		/* property 새로고침(store -> load -> apply) */
 		try { refresh(); }
-		catch(Exception e) {
+		catch (Exception e) {
 			ErrorHandling.saveErrLog("설정파일 새로고침 실패", "", e);
 		}
 	}
@@ -58,7 +55,7 @@ public class Configuration {
 	 */
 	public static void loadProperty() throws Exception {
 		createDefaultFiles();
-		props.load(new BufferedInputStream(new FileInputStream(profile)));
+		props.load(FileUtils.openInputStream(profile));
 	}
 
 	/**
@@ -67,7 +64,7 @@ public class Configuration {
 	 */
 	public static void storeProperty() throws Exception {
 		createDefaultFiles();
-		props.store(new BufferedOutputStream(new FileOutputStream(profile)), "");
+		props.store(FileUtils.openOutputStream(profile), "");
 	}
 	
 	/**

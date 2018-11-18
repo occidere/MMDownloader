@@ -27,7 +27,7 @@ public class ErrorHandling {
 	 * @param exitProgram (false: 종료하지 않음, true: 프로그램 종료)
 	 */
 	public static void printError(String msg, boolean exitProgram) {
-		printer.error(msg);
+		printer.error("{}\n", msg);
 		if (exitProgram) {
 			System.exit(1);
 		}
