@@ -278,6 +278,7 @@ public class Downloader implements AutoCloseable {
 			throw new RuntimeException("Jsoup Parsing Failed: No tag found");
 		} else { // 만약 Jsoup 파싱 시 내용 있으면 성공
 			pageSource = galleryTemplateElement.html();
+			ErrorHandling.saveErrLog("html test", pageSource, null);
 		}
 
 		print.info("고속 연결 성공!\n");
