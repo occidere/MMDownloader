@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 public final class MaruLoggerFactory {
 
 	private static Logger printLogger;
+	private static ConsoleAppender consoleAppender;
+	private static FileAppender fileAppender;
 
 	/**
 	 * 에러 내용을 파일로 저장하는 Logger 를 가져온다.
@@ -71,7 +73,10 @@ public final class MaruLoggerFactory {
 	}
 
 	private static FileAppender getFileAppender(LoggerContext loggerContext, PatternLayoutEncoder encoder, String fileName, String loggerName) {
-		FileAppender fileAppender = new FileAppender();
+		if (fileAppender != null) {
+			fileAppender.stop();
+		}
+		fileAppender = new FileAppender();
 		fileAppender.setContext(loggerContext);
 		fileAppender.setName(loggerName);
 		fileAppender.setFile(fileName);
@@ -81,7 +86,10 @@ public final class MaruLoggerFactory {
 	}
 
 	private static ConsoleAppender getConsoleAppender(LoggerContext loggerContext, PatternLayoutEncoder encoder) {
-		ConsoleAppender consoleAppender = new ConsoleAppender();
+		if (consoleAppender != null) {
+			return consoleAppender;
+		}
+		consoleAppender = new ConsoleAppender();
 		consoleAppender.setContext(loggerContext);
 		consoleAppender.setEncoder(encoder);
 		consoleAppender.start();
