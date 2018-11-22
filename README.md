@@ -6,6 +6,9 @@
 [![GitHub license](https://img.shields.io/github/license/occidere/MMDownloader.svg)](https://github.com/occidere/MMDownloader/blob/master/LICENSE)
 
 마루마루 다운로더 신규 프로젝트
+<p align="center">
+ <img src="https://postfiles.pstatic.net/MjAxODExMjJfNDIg/MDAxNTQyODk4Njk2NjE4.yoXGXDBmWNCTEStoUKiwjalHlkgSZTvC0RbgBEcBOXsg.2KrEEEHMv7cAOC-bTz7PfETQWcxjzDp7RmVKSR2TJiAg.JPEG.occidere/screen-0.jpg?type=w773" align="center"/>
+</p>
 
 ### 사용법(Gitbook): https://occidere.gitbooks.io/mmdownloader/content/
 
